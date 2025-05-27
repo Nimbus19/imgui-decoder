@@ -22,7 +22,7 @@ static EGLSurface           g_EglSurface = EGL_NO_SURFACE;
 static EGLContext           g_EglContext = EGL_NO_CONTEXT;
 static struct android_app*  g_App = nullptr;
 static bool                 g_Initialized = false;
-static char                 g_LogTag[] = "ImGuidecoder";
+static char                 g_LogTag[] = "ImGuiDecoder";
 static std::string          g_IniFilename = "";
 
 // Forward declarations of helper functions

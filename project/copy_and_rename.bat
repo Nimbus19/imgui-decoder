@@ -12,6 +12,7 @@ setlocal enabledelayedexpansion
 set "source_folder=..\third_party\imgui\examples"
 set "destination_folder=."
 set "replace_str=decoder"
+set "replace_str_upper=Decoder"
 @REM ------------------------------------------------------------------------------
 
 :main
@@ -96,5 +97,7 @@ set "replace_str=decoder"
 :replace_file
 	set "target=%destination_folder%\%~1"
 	@REM replace "example" with %replace_str%
-	powershell -Command "(Get-Content '%target%') -replace 'example', '%replace_str%' | Set-Content '%target%'"
+	powershell -Command "(Get-Content '%target%') -creplace 'example', '%replace_str%' | Set-Content '%target%'"
+	@REM replace "Example" with %replace_str_upper%
+	powershell -Command "(Get-Content '%target%') -creplace 'Example', '%replace_str_upper%' | Set-Content '%target%'"
 	exit /b 0
