@@ -26,7 +26,7 @@ set "replace_str=decoder"
 	call :copy_and_rename_windows_example "example_win32_directx12" "%replace_str%_win32_directx12"
 	call :copy_file "imgui_examples.sln" "windows\imgui_%replace_str%.sln"
 	call :copy_file "README.txt" "windows\"
-	call :replace_str "windows\imgui_%replace_str%.sln"
+	call :replace_file "windows\imgui_%replace_str%.sln"
 
 	exit /b 0
 
@@ -36,10 +36,11 @@ set "replace_str=decoder"
 	call :copy_folder "%example_name%\" "android\%new_name%\" 
 	call :replace_path "android\%new_name%\CMakeLists.txt" 
 	echo rootProject.name='imgui_%replace_str%'>>"%destination_folder%\android\%new_name%\android\settings.gradle"
-	call :replace_str "android\%new_name%\CMakeLists.txt"
-	call :replace_str "android\%new_name%\android\app\build.gradle"
-	call :replace_str "android\%new_name%\android\app\src\main\AndroidManifest.xml"
-	call :replace_str "android\%new_name%\android\app\src\main\java\MainActivity.kt"
+	call :replace_file "android\%new_name%\main.cpp"
+	call :replace_file "android\%new_name%\CMakeLists.txt"
+	call :replace_file "android\%new_name%\android\app\build.gradle"
+	call :replace_file "android\%new_name%\android\app\src\main\AndroidManifest.xml"
+	call :replace_file "android\%new_name%\android\app\src\main\java\MainActivity.kt"
 	exit /b 0
 
 
@@ -49,8 +50,8 @@ set "replace_str=decoder"
 	call :copy_folder "%example_name%\" "apple\%new_name%\" 
 	call :rename_file "apple\%new_name%\%example_name%.xcodeproj" "%new_name%.xcodeproj"
 	call :replace_path "apple\%new_name%\%new_name%.xcodeproj\project.pbxproj"
-	call :replace_str "apple\%new_name%\Makefile"
-	call :replace_str "apple\%new_name%\%new_name%.xcodeproj\project.pbxproj"
+	call :replace_file "apple\%new_name%\Makefile"
+	call :replace_file "apple\%new_name%\%new_name%.xcodeproj\project.pbxproj"
 	exit /b 0
 
 :copy_and_rename_windows_example
@@ -62,8 +63,8 @@ set "replace_str=decoder"
 	call :replace_path "windows\%new_name%\build_win32.bat" 
 	call :replace_path "windows\%new_name%\%new_name%.vcxproj" 
 	call :replace_path "windows\%new_name%\%new_name%.vcxproj.filters"
-	call :replace_str "windows\%new_name%\build_win32.bat"
-	call :replace_str "windows\%new_name%\%new_name%.vcxproj"
+	call :replace_file "windows\%new_name%\build_win32.bat"
+	call :replace_file "windows\%new_name%\%new_name%.vcxproj"
 	exit /b 0
 
 :copy_folder
@@ -92,8 +93,8 @@ set "replace_str=decoder"
 	powershell -Command "(Get-Content '%target%') -replace '\.\.\\\.\.', '..\..\..\third_party\imgui' | Set-Content '%target%'"
 	exit /b 0
 
-:replace_str
-	set "target=%destination_folder%\%~1"	
+:replace_file
+	set "target=%destination_folder%\%~1"
 	@REM replace "example" with %replace_str%
 	powershell -Command "(Get-Content '%target%') -replace 'example', '%replace_str%' | Set-Content '%target%'"
 	exit /b 0

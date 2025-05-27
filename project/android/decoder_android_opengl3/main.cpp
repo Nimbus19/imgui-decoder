@@ -1,4 +1,4 @@
-// dear imgui: standalone example application for Android + OpenGL ES 3
+// dear imgui: standalone decoder application for Android + OpenGL ES 3
 
 // Learn about Dear ImGui:
 // - FAQ                  https://dearimgui.com/faq
@@ -22,7 +22,7 @@ static EGLSurface           g_EglSurface = EGL_NO_SURFACE;
 static EGLContext           g_EglContext = EGL_NO_CONTEXT;
 static struct android_app*  g_App = nullptr;
 static bool                 g_Initialized = false;
-static char                 g_LogTag[] = "ImGuiExample";
+static char                 g_LogTag[] = "ImGuidecoder";
 static std::string          g_IniFilename = "";
 
 // Forward declarations of helper functions
@@ -198,7 +198,7 @@ void MainLoopStep()
         return;
 
     // Our state
-    // (we use static, which essentially makes the variable globals, as a convenience to keep the example code easy to follow)
+    // (we use static, which essentially makes the variable globals, as a convenience to keep the decoder code easy to follow)
     static bool show_demo_window = true;
     static bool show_another_window = false;
     static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
