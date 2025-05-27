@@ -37,8 +37,8 @@
 		07A82ED62139413C0078D120 /* imgui_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = imgui_internal.h; path = ../../../third_party/imgui/imgui_internal.h; sourceTree = "<group>"; };
 		07A82ED72139413C0078D120 /* imgui_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = imgui_widgets.cpp; path = ../../../third_party/imgui/imgui_widgets.cpp; sourceTree = "<group>"; };
 		5079822D257677DB0038A28D /* imgui_tables.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = imgui_tables.cpp; path = ../../../third_party/imgui/imgui_tables.cpp; sourceTree = "<group>"; };
-		8307E7C420E9F9C900473790 /* example_apple_metal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = example_apple_metal.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		8307E7DA20E9F9C900473790 /* example_apple_metal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = example_apple_metal.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8307E7C420E9F9C900473790 /* decoder_apple_metal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = decoder_apple_metal.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8307E7DA20E9F9C900473790 /* decoder_apple_metal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = decoder_apple_metal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8309BD8E253CCAAA0045E2A1 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		8309BDA0253CCBC10045E2A1 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		8309BDB5253CCC9D0045E2A1 /* imgui_impl_metal.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = imgui_impl_metal.mm; path = ../../../third_party/imgui/backends/imgui_impl_metal.mm; sourceTree = "<group>"; };
@@ -90,7 +90,7 @@
 			isa = PBXGroup;
 			children = (
 				83BBE9F020EB544400295997 /* imgui */,
-				8309BD9E253CCBA70045E2A1 /* example */,
+				8309BD9E253CCBA70045E2A1 /* decoder */,
 				8307E7C520E9F9C900473790 /* Products */,
 				83BBE9E320EB46B800295997 /* Frameworks */,
 			);
@@ -99,20 +99,20 @@
 		8307E7C520E9F9C900473790 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8307E7C420E9F9C900473790 /* example_apple_metal.app */,
-				8307E7DA20E9F9C900473790 /* example_apple_metal.app */,
+				8307E7C420E9F9C900473790 /* decoder_apple_metal.app */,
+				8307E7DA20E9F9C900473790 /* decoder_apple_metal.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8309BD9E253CCBA70045E2A1 /* example */ = {
+		8309BD9E253CCBA70045E2A1 /* decoder */ = {
 			isa = PBXGroup;
 			children = (
 				8309BDF6253CDAAE0045E2A1 /* iOS */,
 				8309BDF9253CDAAE0045E2A1 /* macOS */,
 				8309BDA0253CCBC10045E2A1 /* main.mm */,
 			);
-			name = example;
+			name = decoder;
 			sourceTree = "<group>";
 		};
 		8309BDF6253CDAAE0045E2A1 /* iOS */ = {
@@ -169,9 +169,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8307E7C320E9F9C900473790 /* example_apple_metal_ios */ = {
+		8307E7C320E9F9C900473790 /* decoder_apple_metal_ios */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8307E7F020E9F9C900473790 /* Build configuration list for PBXNativeTarget "example_apple_metal_ios" */;
+			buildConfigurationList = 8307E7F020E9F9C900473790 /* Build configuration list for PBXNativeTarget "decoder_apple_metal_ios" */;
 			buildPhases = (
 				8307E7C020E9F9C900473790 /* Sources */,
 				8307E7C120E9F9C900473790 /* Frameworks */,
@@ -181,14 +181,14 @@
 			);
 			dependencies = (
 			);
-			name = example_apple_metal_ios;
+			name = decoder_apple_metal_ios;
 			productName = "imguiex iOS";
-			productReference = 8307E7C420E9F9C900473790 /* example_apple_metal.app */;
+			productReference = 8307E7C420E9F9C900473790 /* decoder_apple_metal.app */;
 			productType = "com.apple.product-type.application";
 		};
-		8307E7D920E9F9C900473790 /* example_apple_metal_macos */ = {
+		8307E7D920E9F9C900473790 /* decoder_apple_metal_macos */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8307E7F320E9F9C900473790 /* Build configuration list for PBXNativeTarget "example_apple_metal_macos" */;
+			buildConfigurationList = 8307E7F320E9F9C900473790 /* Build configuration list for PBXNativeTarget "decoder_apple_metal_macos" */;
 			buildPhases = (
 				8307E7D620E9F9C900473790 /* Sources */,
 				8307E7D720E9F9C900473790 /* Frameworks */,
@@ -198,9 +198,9 @@
 			);
 			dependencies = (
 			);
-			name = example_apple_metal_macos;
+			name = decoder_apple_metal_macos;
 			productName = "imguiex macOS";
-			productReference = 8307E7DA20E9F9C900473790 /* example_apple_metal.app */;
+			productReference = 8307E7DA20E9F9C900473790 /* decoder_apple_metal.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -223,7 +223,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8307E7B920E9F9C700473790 /* Build configuration list for PBXProject "example_apple_metal" */;
+			buildConfigurationList = 8307E7B920E9F9C700473790 /* Build configuration list for PBXProject "decoder_apple_metal" */;
 			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -236,8 +236,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8307E7C320E9F9C900473790 /* example_apple_metal_ios */,
-				8307E7D920E9F9C900473790 /* example_apple_metal_macos */,
+				8307E7C320E9F9C900473790 /* decoder_apple_metal_ios */,
+				8307E7D920E9F9C900473790 /* decoder_apple_metal_macos */,
 			);
 		};
 /* End PBXProject section */
@@ -415,8 +415,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.imgui.example.apple-metal-ios";
-				PRODUCT_NAME = example_apple_metal;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.imgui.decoder.apple-metal-ios";
+				PRODUCT_NAME = decoder_apple_metal;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../../../third_party/imgui/**";
@@ -435,8 +435,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.imgui.example.apple-metal-ios";
-				PRODUCT_NAME = example_apple_metal;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.imgui.decoder.apple-metal-ios";
+				PRODUCT_NAME = decoder_apple_metal;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../../../third_party/imgui/**";
@@ -458,8 +458,8 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.imgui.example.apple-metal-macos";
-				PRODUCT_NAME = example_apple_metal;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.imgui.decoder.apple-metal-macos";
+				PRODUCT_NAME = decoder_apple_metal;
 				SDKROOT = macosx;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../../../third_party/imgui/**";
 			};
@@ -479,8 +479,8 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.imgui.example.apple-metal-macos";
-				PRODUCT_NAME = example_apple_metal;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.imgui.decoder.apple-metal-macos";
+				PRODUCT_NAME = decoder_apple_metal;
 				SDKROOT = macosx;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../../../third_party/imgui/**";
 			};
@@ -489,7 +489,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8307E7B920E9F9C700473790 /* Build configuration list for PBXProject "example_apple_metal" */ = {
+		8307E7B920E9F9C700473790 /* Build configuration list for PBXProject "decoder_apple_metal" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8307E7EE20E9F9C900473790 /* Debug */,
@@ -498,7 +498,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8307E7F020E9F9C900473790 /* Build configuration list for PBXNativeTarget "example_apple_metal_ios" */ = {
+		8307E7F020E9F9C900473790 /* Build configuration list for PBXNativeTarget "decoder_apple_metal_ios" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8307E7F120E9F9C900473790 /* Debug */,
@@ -507,7 +507,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8307E7F320E9F9C900473790 /* Build configuration list for PBXNativeTarget "example_apple_metal_macos" */ = {
+		8307E7F320E9F9C900473790 /* Build configuration list for PBXNativeTarget "decoder_apple_metal_macos" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8307E7F420E9F9C900473790 /* Debug */,

@@ -1,6 +1,6 @@
-# Makefile for example_apple_metal, for macOS only (**not iOS**)
+# Makefile for decoder_apple_metal, for macOS only (**not iOS**)
 CXX = clang++
-EXE = example_apple_metal
+EXE = decoder_apple_metal
 IMGUI_DIR = ../../
 SOURCES = main.mm
 SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
