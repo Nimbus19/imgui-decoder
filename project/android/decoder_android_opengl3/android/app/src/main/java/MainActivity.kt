@@ -7,9 +7,16 @@ import android.view.inputmethod.InputMethodManager
 import android.view.KeyEvent
 import java.util.concurrent.LinkedBlockingQueue
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import android.app.Activity
+
 class MainActivity : NativeActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestStoragePermission(this)
     }
 
     fun showSoftInput() {
@@ -36,5 +43,16 @@ class MainActivity : NativeActivity() {
 
     fun pollUnicodeChar(): Int {
         return unicodeCharacterQueue.poll() ?: 0
+    }
+
+    private fun requestStoragePermission(activity: Activity) {
+        val permissions = arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity, permissions, 1)
+        }
     }
 }

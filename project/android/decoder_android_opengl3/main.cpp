@@ -192,7 +192,7 @@ void Init(struct android_app* app)
     // FIXME: Put some effort into DPI awareness
     ImGui::GetStyle().ScaleAllSizes(3.0f);
 
-    g_Decoder = new Decoder();
+    g_Decoder = new Decoder(g_App);
     g_Initialized = true;
 }
 
