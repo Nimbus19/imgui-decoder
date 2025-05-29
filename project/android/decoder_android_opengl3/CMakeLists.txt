@@ -16,6 +16,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/imgui/backends/imgui_impl_android.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/imgui/backends/imgui_impl_opengl3.cpp
   ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../decoder/decoder.cpp
 )
 
 set(CMAKE_SHARED_LINKER_FLAGS
@@ -30,6 +31,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/imgui
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/imgui/backends
   ${ANDROID_NDK}/sources/android/native_app_glue
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../decoder
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
