@@ -1,6 +1,7 @@
 package imgui.decoder.android
 
 import android.app.NativeActivity
+import android.os.Build
 import android.os.Bundle
 import android.content.Context
 import android.view.inputmethod.InputMethodManager
@@ -8,15 +9,12 @@ import android.view.KeyEvent
 import java.util.concurrent.LinkedBlockingQueue
 
 import android.Manifest
-import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import android.app.Activity
 
 class MainActivity : NativeActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestStoragePermission(this)
+        grantPermissions()
     }
 
     fun showSoftInput() {
@@ -45,14 +43,17 @@ class MainActivity : NativeActivity() {
         return unicodeCharacterQueue.poll() ?: 0
     }
 
-    private fun requestStoragePermission(activity: Activity) {
-        val permissions = arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
+    private fun grantPermissions() {
+        val permissionsList: MutableList<String> = ArrayList()
 
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, permissions, 1)
+        if (Build.VERSION.SDK_INT >= 33) {
+            permissionsList.add(Manifest.permission.READ_MEDIA_VIDEO)
+            permissionsList.add(Manifest.permission.READ_MEDIA_AUDIO)
+        } else {
+            permissionsList.add(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
+
+        val permissionsArray = permissionsList.toTypedArray<String>()
+        ActivityCompat.requestPermissions(this, permissionsArray, 0)
     }
 }
