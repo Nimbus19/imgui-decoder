@@ -69,41 +69,32 @@ void DecoderGUI::DrawReadUI()
     ImGui::TextColored(ImVec4(1,1,1,1), "Read");
     ImGui::Spacing();
 
-    // 檔案列表區塊
+    // File buffer
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.13f,0.13f,0.13f,1.0f));
     ImGui::BeginChild("FileList", ImVec2(0, 120), true, ImGuiChildFlags_AlwaysUseWindowPadding);
-    ImGui::TextColored(ImVec4(1,1,0.6f,1),"FileList");
+    ImGui::TextColored(ImVec4(1,1,0.6f,1),"%s", file_buffer_);
     ImGui::EndChild();
     ImGui::PopStyleColor();
     ImGui::Spacing();
 
-    // 輸出路徑
+    // output path
     ImGui::InputText("OutPath", output_path_, IM_ARRAYSIZE(output_path_));
-    // 檔名前綴
-    ImGui::InputText("Prefix", prefix_, IM_ARRAYSIZE(prefix_));
 
-    // 導出格式
-    ImGui::Text("Format:");
-    ImGui::RadioButton("Mp4", &export_format_, 0); ImGui::SameLine();
-    ImGui::RadioButton("M4e", &export_format_, 1); ImGui::SameLine();
-    ImGui::RadioButton("Mp4 & M4e", &export_format_, 2);
-    ImGui::Spacing();
-
-    // 全部重設按鈕（紅色）
+    // Reset button
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f,0.1f,0.1f,1.0f));
     if (ImGui::Button("Reset", ImVec2(120, 40)))
     {
-        /*...*/
+        memset(file_buffer_, 0, sizeof(file_buffer_));
     }
     ImGui::PopStyleColor();
 
     ImGui::SameLine();
 
-    // 開始按鈕（綠色）
+    // Read button
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f,0.5f,0.1f,1.0f));
-    if (ImGui::Button("Start", ImVec2(120, 40)))
+    if (ImGui::Button("Read", ImVec2(120, 40)))
     {
-        /*...*/
+        decoder_->ReadFile(output_path_, file_buffer_, sizeof(file_buffer_));
     }
     ImGui::PopStyleColor();
 }

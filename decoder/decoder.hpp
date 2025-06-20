@@ -14,7 +14,7 @@ public:
     static GLuint CreateTexture(int width, int height, const void* data = nullptr);
     static void DestroyTexture(GLuint& textureID);
     static bool GetMediaFormat(struct AMediaFormat*& outMediaFormat, const char* url, const char* mine);
-    bool ReadFile();
+    bool ReadFile(const char* filePath, char* outBuffer, size_t bufferSize);
 
     const int width = 64;
     const int height = 64;

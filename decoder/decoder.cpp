@@ -23,21 +23,16 @@ Decoder::~Decoder()
     DestroyTexture(textureID);
 }
 //------------------------------------------------------------------------------
-bool Decoder::ReadFile()
+bool Decoder::ReadFile(const char* filePath, char* outBuffer, size_t bufferSize)
 {
-    const char* filePath = "/sdcard/Download/apple_bipbop/bipbop.mp4";
     FILE* file = fopen(filePath, "r");
     if (file == nullptr)
     {
-        Log("Failed to open file");
+        sprintf(outBuffer, "Failed to open file: %s", filePath);
         return false;
     }
 
-    char buffer[256];
-    while (fgets(buffer, sizeof(buffer), file))
-    {
-        Log("%s", buffer);
-    }
+    fgets(outBuffer, (int)bufferSize, file);
 
     fclose(file);
     return true;

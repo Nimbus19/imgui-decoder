@@ -22,7 +22,8 @@ protected:
     class Decoder* decoder_ = nullptr;
 
     int curr_page_ = 0; // 0: Read, 1: Decode, 2: Render
-    char output_path_[256] = "";
-    char prefix_[64] = "output";
-    int export_format_ = 0; // 0: Mp4, 1: M4e, 2: Mp4 & M4e
+
+    // Read
+    char output_path_[256] = "/sdcard/Download/apple_bipbop/bipbop.mp4";
+    char file_buffer_[1024] = "FileBuffer";
 };
