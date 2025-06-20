@@ -6,6 +6,7 @@
 // - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
 // - Introduction, links and more at the top of imgui.cpp
 
+#include "decoderGUI.hpp"
 #include "decoder.hpp"
 #include "imgui.h"
 #include "imgui_impl_android.h"
@@ -18,7 +19,7 @@
 #include <string>
 
 // Class
-static Decoder* g_Decoder = nullptr;
+static DecoderGUI* g_Decoder = nullptr;
 
 // Data
 static EGLDisplay           g_EglDisplay = EGL_NO_DISPLAY;
@@ -192,7 +193,7 @@ void Init(struct android_app* app)
     // FIXME: Put some effort into DPI awareness
     ImGui::GetStyle().ScaleAllSizes(3.0f);
 
-    g_Decoder = new Decoder(g_App);
+    g_Decoder = new DecoderGUI(g_App);
     g_Initialized = true;
 }
 
