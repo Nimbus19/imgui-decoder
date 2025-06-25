@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
-  ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../decoder_android_opengl3/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/imgui/imgui.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/imgui/imgui_demo.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/imgui/imgui_draw.cpp
