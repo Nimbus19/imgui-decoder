@@ -7,6 +7,9 @@
     <Filter Include="sources">
       <UniqueIdentifier>{08e36723-ce4f-4cff-9662-c40801cf1acf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="decoder">
+      <UniqueIdentifier>{f02b058b-a8ae-4b30-ba69-cfebdf440837}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\third_party\imgui\imconfig.h">
@@ -23,6 +26,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\third_party\imgui\backends\imgui_impl_dx11.h">
       <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\decoder.hpp">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\decoder_ui.hpp">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\decoder_android.hpp">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\decoder_windows.hpp">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\decoder_apple.hpp">
+      <Filter>decoder</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -49,6 +67,24 @@
     </ClCompile>
     <ClCompile Include="..\..\..\third_party\imgui\imgui_tables.cpp">
       <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\decoder\decoder.cpp">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\decoder\decoder_ui.cpp">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\decoder\MfDX11UnityDecoder.cpp">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\decoder\decoder_android.cpp">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\decoder\decoder_windows.cpp">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\decoder\decoder_apple.cpp">
+      <Filter>decoder</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
