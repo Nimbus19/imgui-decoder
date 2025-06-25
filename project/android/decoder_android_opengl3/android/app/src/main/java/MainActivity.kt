@@ -1,15 +1,20 @@
 package imgui.decoder.android
 
 import android.app.NativeActivity
+import android.os.Build
 import android.os.Bundle
 import android.content.Context
 import android.view.inputmethod.InputMethodManager
 import android.view.KeyEvent
 import java.util.concurrent.LinkedBlockingQueue
 
+import android.Manifest
+import androidx.core.app.ActivityCompat
+
 class MainActivity : NativeActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        grantPermissions()
     }
 
     fun showSoftInput() {
@@ -36,5 +41,19 @@ class MainActivity : NativeActivity() {
 
     fun pollUnicodeChar(): Int {
         return unicodeCharacterQueue.poll() ?: 0
+    }
+
+    private fun grantPermissions() {
+        val permissionsList: MutableList<String> = ArrayList()
+
+        if (Build.VERSION.SDK_INT >= 33) {
+            permissionsList.add(Manifest.permission.READ_MEDIA_VIDEO)
+            permissionsList.add(Manifest.permission.READ_MEDIA_AUDIO)
+        } else {
+            permissionsList.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+
+        val permissionsArray = permissionsList.toTypedArray<String>()
+        ActivityCompat.requestPermissions(this, permissionsArray, 0)
     }
 }
