@@ -1,11 +1,13 @@
 #pragma once
 
+#include "imgui.h"
 #include <cstdint>
 #include <d3d11.h>
 
 class DecoderUI
 {
 public:
+    using LogFunc = void(*)(const char*, ...);
     const char kVersion[8] = "v 0.0.0";
 
     explicit DecoderUI();
@@ -24,12 +26,13 @@ public:
     void DrawRenderUI();
 
 protected:
-    static void Log(const char* fmt, ...);
 
     class Decoder* decoder_ = nullptr;
 
     int curr_page_ = 0; // 0: Read, 1: Decode, 2: Render
+    static void ConsoleLog(const char* fmt, ...);
 
+    LogFunc log_ = nullptr;    
 #if defined(_WIN32)
     char media_path_[256] = "E:\\Videos\\apple_bipbop\\bipbop.mp4";
 #elif defined(__ANDROID__)

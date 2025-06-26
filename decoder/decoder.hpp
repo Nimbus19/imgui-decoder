@@ -1,11 +1,12 @@
 #pragma once
 
+#include "decoder_ui.hpp"
 #include <cstdint>
 
 class Decoder
 {
 public:
-    using LogFunc = void(*)(const char*, ...);
+    using LogFunc = DecoderUI::LogFunc;
 
     explicit Decoder(LogFunc ui_logger);
     virtual ~Decoder();
@@ -23,7 +24,5 @@ public:
     intptr_t textureID = 0;
 
 protected:
-    virtual void Log(const char* fmt, ...);
-
-    LogFunc ui_logger_ = nullptr;
+    LogFunc Log = nullptr;
 };

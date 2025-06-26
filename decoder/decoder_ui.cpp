@@ -1,6 +1,5 @@
 #include "decoder_ui.hpp"
 #include "decoder.hpp"
-#include "imgui.h"
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
@@ -19,13 +18,14 @@
 //------------------------------------------------------------------------------
 DecoderUI::DecoderUI()
 {
-
+    log_ = ConsoleLog;
 }
 //------------------------------------------------------------------------------
 #if defined(_WIN32)
 DecoderUI::DecoderUI(ID3D11Device* d3d_device, ID3D11DeviceContext* d3d_context, IDXGISwapChain* d3d_swapchain)
 {
-    decoder_ = new DecoderWindows(&DecoderUI::Log, d3d_device, d3d_context, d3d_swapchain);
+    log_ = ConsoleLog;
+    decoder_ = new DecoderWindows(log_, d3d_device, d3d_context, d3d_swapchain);
 }
 #endif
 //------------------------------------------------------------------------------
@@ -157,12 +157,14 @@ void DecoderUI::DrawRenderUI()
     }
 }
 //------------------------------------------------------------------------------
-void DecoderUI::Log(const char *fmt, ...)
+void DecoderUI::ConsoleLog(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
 #if defined(_WIN32)
-
+    char temp[4096];
+    vsnprintf(temp, 4096, fmt, args);
+    OutputDebugStringA(temp);
 #elif defined(__ANDROID__)
     __android_log_vprint(ANDROID_LOG_INFO, "Decoder", fmt, args);
 #elif defined(__APPLE__)

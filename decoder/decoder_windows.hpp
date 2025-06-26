@@ -6,7 +6,7 @@
 class DecoderWindows : public Decoder
 {
 public:
-    explicit DecoderWindows(LogFunc ui_logger, struct ID3D11Device* d3d_device, 
+    explicit DecoderWindows(LogFunc logger, struct ID3D11Device* d3d_device, 
         struct ID3D11DeviceContext* d3d_context, struct IDXGISwapChain* d3d_swapchain);
     virtual ~DecoderWindows();
 

@@ -2,9 +2,9 @@
 #include <cstdarg>
 
 //------------------------------------------------------------------------------
-Decoder::Decoder(LogFunc ui_logger)
+Decoder::Decoder(DecoderUI::LogFunc logger)
 {
-    ui_logger_ = ui_logger;
+    Log = logger;
 }
 //------------------------------------------------------------------------------
 Decoder::~Decoder()
@@ -12,13 +12,3 @@ Decoder::~Decoder()
 
 }
 //------------------------------------------------------------------------------
-void Decoder::Log(const char *fmt, ...)
-{
-    if (ui_logger_)
-    {
-        va_list args;
-        va_start(args, fmt);
-        ui_logger_(fmt, args);
-        va_end(args);
-    }
-}

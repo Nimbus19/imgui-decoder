@@ -27,9 +27,9 @@ template <class T> void SafeRelease(T** ppT)
     }
 }
 //------------------------------------------------------------------------------
-DecoderWindows::DecoderWindows(LogFunc ui_logger, ID3D11Device* d3d_device, 
+DecoderWindows::DecoderWindows(LogFunc logger, ID3D11Device* d3d_device, 
     ID3D11DeviceContext* d3d_context, IDXGISwapChain* d3d_swapchain)
-    : Decoder(ui_logger)
+    : Decoder(logger)
 {
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
     MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET);
