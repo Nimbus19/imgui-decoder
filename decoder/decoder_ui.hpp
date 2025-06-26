@@ -39,5 +39,5 @@ protected:
 #else
     char media_path_[256] = "apple_bipbop/bipbop.mp4";
 #endif
-    char file_buffer_[1024] = "FileBuffer";
+    char file_buffer_[4096] = "MediaInfo";
 };

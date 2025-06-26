@@ -82,16 +82,18 @@ void DecoderUI::DrawReadUI()
     ImGui::Spacing();
 
     // Media Info
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.13f,0.13f,0.13f,1.0f));
-    ImGui::BeginChild("MediaInfo", ImVec2(0, 120), true, ImGuiChildFlags_AlwaysUseWindowPadding);
-    ImGui::PushTextWrapPos(0.0f);
-    ImGui::TextColored(ImVec4(1,1,0.6f,1),"%s", file_buffer_);
-    ImGui::PopTextWrapPos();
+    ImGui::BeginChild("MediaInfo", ImVec2(0, 320), true, ImGuiChildFlags_AlwaysUseWindowPadding);
+    ImGui::InputTextMultiline(
+        "##MediaInfo",
+        file_buffer_,
+        sizeof(file_buffer_),
+        ImVec2(-1, -1),
+        ImGuiInputTextFlags_ReadOnly // selectable but readonly
+    );
     ImGui::EndChild();
-    ImGui::PopStyleColor();
     ImGui::Spacing();
 
-    // output path
+    // Media path
     ImGui::InputText("MediaPath", media_path_, IM_ARRAYSIZE(media_path_));
 
     // Reset button

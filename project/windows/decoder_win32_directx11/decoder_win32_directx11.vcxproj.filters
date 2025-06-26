@@ -42,6 +42,9 @@
     <ClInclude Include="..\..\..\decoder\decoder_apple.hpp">
       <Filter>decoder</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\decoder\decoder_windows_guid.hpp">
+      <Filter>decoder</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\third_party\imgui\imgui.cpp">

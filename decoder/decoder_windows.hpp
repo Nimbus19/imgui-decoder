@@ -6,7 +6,8 @@
 class DecoderWindows : public Decoder
 {
 public:
-    explicit DecoderWindows(LogFunc ui_logger, struct ID3D11Device* d3d_device, struct ID3D11DeviceContext* d3d_context, struct IDXGISwapChain* d3d_swapchain);
+    explicit DecoderWindows(LogFunc ui_logger, struct ID3D11Device* d3d_device, 
+        struct ID3D11DeviceContext* d3d_context, struct IDXGISwapChain* d3d_swapchain);
     virtual ~DecoderWindows();
 
     bool ReadMedia(const char* file_path, char* media_info, size_t info_size) override;
@@ -16,15 +17,18 @@ public:
     void DestroyCodec() override;
 
 private:
-    struct ID3D11Device* d3d_device_;
-    struct ID3D11DeviceContext* d3d_context_;
-    struct IDXGISwapChain* d3d_swapchain_;
+    void PrintMediaType(struct IMFMediaType* type, char* buffer, size_t buffer_size);
+    const char* GuidToName(const GUID& guid);
 
-    struct IMFSourceReader* pReader = nullptr;
-    struct IMFMediaType* pMediaType = nullptr;
-    struct IMFMediaType* pOutputMediaType = nullptr;
-    struct IMFTransform* pTransform = nullptr;
-    struct IMFSample* outputSample = nullptr;
-    struct IMFMediaBuffer* outputBuffer = nullptr;
-    DWORD streamID = 0;
+    struct ID3D11Device* d3d_device_ = nullptr;
+    struct ID3D11DeviceContext* d3d_context_ = nullptr;
+    struct IDXGISwapChain* d3d_swapchain_ = nullptr;
+
+    struct IMFSourceReader* reader_ = nullptr;
+    struct IMFMediaType* input_type_ = nullptr;
+    struct IMFMediaType* output_type_ = nullptr;
+    struct IMFTransform* codec_ = nullptr;
+    struct IMFSample* output_sample_ = nullptr;
+    struct IMFMediaBuffer* output_buffer_ = nullptr;
+    DWORD steam_id_ = 0;
 };
