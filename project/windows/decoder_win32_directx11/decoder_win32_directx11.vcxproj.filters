@@ -86,7 +86,7 @@
     <ClCompile Include="..\..\..\decoder\decoder_windows.cpp">
       <Filter>decoder</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\decoder\decoder_apple.cpp">
+    <ClCompile Include="..\..\..\decoder\decoder_apple.mm">
       <Filter>decoder</Filter>
     </ClCompile>
   </ItemGroup>
