@@ -50,8 +50,6 @@ void DecoderUI::DrawUI()
         if (ImGui::Button("Read", ImVec2(-1, 40))) { curr_page_ = 0; }
         ImGui::Spacing();
         if (ImGui::Button("Decode", ImVec2(-1, 40))) { curr_page_ = 1; }
-        ImGui::Spacing();
-        if (ImGui::Button("Render", ImVec2(-1, 40))) { curr_page_ = 2; }
 
         // 版本顯示
         ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 20);
@@ -68,8 +66,6 @@ void DecoderUI::DrawUI()
             DrawReadUI();
         else if (curr_page_ == 1)
             DrawDecodeUI();
-        else if (curr_page_ == 2)
-            DrawRenderUI();
     }
     ImGui::EndChild();
 
@@ -85,8 +81,8 @@ void DecoderUI::DrawReadUI()
     ImGui::BeginChild("MediaInfo", ImVec2(0, 320), true, ImGuiChildFlags_AlwaysUseWindowPadding);
     ImGui::InputTextMultiline(
         "##MediaInfo",
-        file_buffer_,
-        sizeof(file_buffer_),
+        media_text_,
+        sizeof(media_text_),
         ImVec2(-1, -1),
         ImGuiInputTextFlags_ReadOnly // selectable but readonly
     );
@@ -96,21 +92,11 @@ void DecoderUI::DrawReadUI()
     // Media path
     ImGui::InputText("MediaPath", media_path_, IM_ARRAYSIZE(media_path_));
 
-    // Reset button
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f,0.1f,0.1f,1.0f));
-    if (ImGui::Button("Reset", ImVec2(120, 40)))
-    {
-        memset(file_buffer_, 0, sizeof(file_buffer_));
-    }
-    ImGui::PopStyleColor();
-
-    ImGui::SameLine();
-
     // Read button
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f,0.5f,0.1f,1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Button, kGreen);
     if (ImGui::Button("Read", ImVec2(120, 40)))
     {
-        decoder_->ReadMedia(media_path_, file_buffer_, sizeof(file_buffer_));
+        decoder_->ReadMedia(media_path_, media_text_, sizeof(media_text_));
     }
     ImGui::PopStyleColor();
 }
@@ -119,42 +105,73 @@ void DecoderUI::DrawDecodeUI()
 {
     ImGui::TextColored(ImVec4(1,1,1,1), "Decode");
     ImGui::Spacing();
-}
-//------------------------------------------------------------------------------
-void DecoderUI::DrawRenderUI()
-{
-    ImGui::TextColored(ImVec4(1,1,1,1), "Render");
+
+    // Text Section
+    ImGui::BeginChild("Create", ImVec2(160, 120), true);
+    ImGui::InputTextMultiline(
+        "##Create",
+        create_text_,
+        sizeof(create_text_),
+        ImVec2(-1, -1),
+        ImGuiInputTextFlags_ReadOnly
+    );
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("Decode", ImVec2(160, 120), true);
+    ImGui::InputTextMultiline(
+        "##Decode",
+        decode_text_,
+        sizeof(decode_text_),
+        ImVec2(-1, -1),
+        ImGuiInputTextFlags_ReadOnly
+    );
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("Render", ImVec2(160, 120), true);
+    ImGui::InputTextMultiline(
+        "##Render",
+        render_text_,
+        sizeof(render_text_),
+        ImVec2(-1, -1),
+        ImGuiInputTextFlags_ReadOnly
+    );
+    ImGui::EndChild();
     ImGui::Spacing();
 
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f,0.1f,0.1f,1.0f));
-    if (ImGui::Button("CreateTexture", ImVec2(240, 40)))
+    // Create button
+    ImGui::PushStyleColor(ImGuiCol_Button, kRed);
+    if (ImGui::Button("Create", ImVec2(160, 40)))
     {
-        int width = decoder_->width;
-        int height = decoder_->height;
-        uint8_t* data = (uint8_t*)malloc(width * height * 4);
-        if (data)
-        {
-            for (int i = 0; i < width * height; ++i)
-            {
-                data[i * 4 + 0] = 255; // R
-                data[i * 4 + 1] = 255;   // G
-                data[i * 4 + 2] = 0;   // B
-                data[i * 4 + 3] = 255; // A
-            }
-            decoder_->CreateTexture(data);
-            free(data);
-        }
+        decoder_->CreateCodec();
+    }
+    ImGui::PopStyleColor();
+    ImGui::SameLine();
+
+    // Decode button
+    if (ImGui::Button("Decode", ImVec2(160, 40)))
+    {
+        decoder_->DecodeFrame();
+    }
+    ImGui::SameLine();
+
+    // Render button
+    ImGui::PushStyleColor(ImGuiCol_Button, kGreen);
+    if (ImGui::Button("Render", ImVec2(160, 40)))
+    {
+        decoder_->RenderFrame();
     }
     ImGui::PopStyleColor();
 
+    // Show texture
     if (decoder_->textureID != 0)
     {
         ImGui::Text("Texture:");
         ImGui::Text("pointer = %x", decoder_->textureID);
         ImGui::Text("size = %d x %d", decoder_->width, decoder_->height);
         ImGui::Image((ImTextureID)(intptr_t)decoder_->textureID,
-                     ImVec2((float)decoder_->width, (float)decoder_->height));
+            ImVec2((float)decoder_->width, (float)decoder_->height));
     }
+
 }
 //------------------------------------------------------------------------------
 void DecoderUI::ConsoleLog(const char *fmt, ...)

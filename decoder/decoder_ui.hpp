@@ -23,16 +23,16 @@ public:
     void DrawUI();
     void DrawReadUI();
     void DrawDecodeUI();
-    void DrawRenderUI();
 
 protected:
+    const ImVec4 kGreen = ImVec4(0.1f, 0.5f, 0.1f, 1.0f);
+    const ImVec4 kRed = ImVec4(0.5f, 0.1f, 0.1f, 1.0f);
 
-    class Decoder* decoder_ = nullptr;
-
-    int curr_page_ = 0; // 0: Read, 1: Decode, 2: Render
     static void ConsoleLog(const char* fmt, ...);
 
     LogFunc log_ = nullptr;    
+    class Decoder* decoder_ = nullptr;
+    int curr_page_ = 0; // 0: Read, 1: Decode
 #if defined(_WIN32)
     char media_path_[256] = "E:\\Videos\\apple_bipbop\\bipbop.mp4";
 #elif defined(__ANDROID__)
@@ -42,5 +42,8 @@ protected:
 #else
     char media_path_[256] = "apple_bipbop/bipbop.mp4";
 #endif
-    char file_buffer_[4096] = "MediaInfo";
+    char media_text_[2048] = "Media Info";
+    char create_text_[512] = "Create Info";
+    char decode_text_[512] = "Decode Info";
+    char render_text_[512] = "Render Info";
 };
