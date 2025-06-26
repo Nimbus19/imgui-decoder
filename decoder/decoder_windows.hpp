@@ -15,10 +15,14 @@ public:
     void DestroyTexture() override;
     bool CreateCodec() override;
     void DestroyCodec() override;
+    bool DecodeFrame() override;
+    bool RenderFrame() override;
 
 private:
     void PrintMediaType(struct IMFMediaType* type, char* buffer, size_t buffer_size);
     const char* GuidToName(const GUID& guid);
+    void SetOutputType();
+    void AllocateOutputSample();
 
     struct ID3D11Device* d3d_device_ = nullptr;
     struct ID3D11DeviceContext* d3d_context_ = nullptr;

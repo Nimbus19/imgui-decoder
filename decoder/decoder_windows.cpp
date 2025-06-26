@@ -201,10 +201,13 @@ void DecoderWindows::DestroyTexture()
 //------------------------------------------------------------------------------
 bool DecoderWindows::CreateCodec()
 {
-    SafeRelease(&codec_);
+    if (!input_type_)
+        return false;
+
+    DestroyCodec();
 
     HRESULT hr = S_OK;
-    hr = CoCreateInstance(CLSID_CMSAACDecMFT, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&codec_));
+    hr = CoCreateInstance(CLSID_CMSH264DecoderMFT, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&codec_));
     if (FAILED(hr))
         return false;
 
@@ -226,3 +229,188 @@ void DecoderWindows::DestroyCodec()
     SafeRelease(&output_sample_);
     SafeRelease(&output_buffer_);
 }
+//------------------------------------------------------------------------------
+bool DecoderWindows::DecodeFrame()
+{
+    if (!reader_ || !codec_)
+        return false;
+
+    HRESULT hr = S_OK;
+    DWORD flags;
+    LONGLONG timestamp;
+    IMFSample* sample = nullptr;
+
+    hr = reader_->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, &steam_id_, &flags, &timestamp, &sample);
+
+    if (sample)
+    {
+        hr = codec_->ProcessInput(0, sample, 0);
+        switch (hr)
+        {
+        case S_OK:
+            Log("ProcessInput : S_OK\n");
+            break;
+        case MF_E_NOTACCEPTING:
+            Log("ProcessInput : MF_E_NOTACCEPTING\n");
+            break;
+        default:
+            Log("ProcessInput FAIL : %08X\n", hr);
+            break;
+        }
+
+        LONGLONG pts;
+        sample->GetSampleTime(&pts);
+        Log("PTS : %lld\n", pts);
+
+        DWORD total_length = 0;
+        sample->GetTotalLength(&total_length);
+        Log("Size : %d\n", total_length);
+    }
+
+    SafeRelease(&sample);
+    return SUCCEEDED(hr);
+}
+//------------------------------------------------------------------------------
+bool DecoderWindows::RenderFrame()
+{
+    if (!codec_)
+        return false;
+
+    HRESULT hr = S_OK;
+    DWORD output_status = 0;
+    MFT_OUTPUT_DATA_BUFFER output_buffer = { steam_id_, output_sample_, 0, NULL };
+    hr = codec_->ProcessOutput(0, 1, &output_buffer, &output_status);
+
+    switch (hr)
+    {
+        case S_OK:
+        {
+            Log("ProcessOutput : S_OK\n");
+
+            IMFSample* output_sample = output_buffer.pSample;
+
+            LONGLONG sample_time;
+            hr = output_sample->GetSampleTime(&sample_time);
+            printf("%s : %lld\n", "PTS", sample_time);
+
+            DWORD output_count = 0;
+            hr = output_sample->GetBufferCount(&output_count);
+
+            for (DWORD buf_index = 0; buf_index < output_count; buf_index++)
+            {
+                IMFMediaBuffer* output_media_buffer;
+                hr = output_sample->GetBufferByIndex(buf_index, &output_media_buffer);
+                if (FAILED(hr))
+                    break;
+
+                DWORD total_length = 0;
+                hr = output_media_buffer->GetCurrentLength(&total_length);
+                if (FAILED(hr))
+                    break;
+                printf("%s : %d\n", "Size", total_length);
+
+                BYTE* buffer_start;
+                hr = output_media_buffer->Lock(&buffer_start, NULL, NULL);
+                if (FAILED(hr))
+                    break;
+
+                hr = output_media_buffer->Unlock();
+                if (FAILED(hr))
+                    break;
+
+                hr = output_media_buffer->SetCurrentLength(0);
+                if (FAILED(hr))
+                    break;
+            }
+
+            break;
+        }
+        case MF_E_TRANSFORM_TYPE_NOT_SET:
+        case MF_E_TRANSFORM_STREAM_CHANGE:
+        {
+            Log("ProcessOutput : MF_E_TRANSFORM_STREAM_CHANGE\n");
+            SetOutputType();
+            AllocateOutputSample();
+            break;
+        }
+        case MF_E_TRANSFORM_NEED_MORE_INPUT:
+        {
+            Log("ProcessOutput : MF_E_TRANSFORM_NEED_MORE_INPUT\n");
+            break;
+        }
+        default:
+        {
+            Log("ProcessOutput FAIL : %08X\n", hr);
+            break;
+        }
+    }
+
+    return SUCCEEDED(hr);
+}
+//------------------------------------------------------------------------------
+void DecoderWindows::SetOutputType()
+{
+    HRESULT hr = S_OK;
+
+    MFCreateMediaType(&output_type_);
+    output_type_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
+    output_type_->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32);
+
+    for (DWORD i = 0; i < 1024; ++i)
+    {
+        if (codec_->GetOutputAvailableType(0, i, &output_type_) != S_OK)
+            break;
+        GUID subtype = {};
+        output_type_->GetGUID(MF_MT_SUBTYPE, &subtype);
+        if (subtype == MFVideoFormat_RGB32)
+            break;
+    }
+
+    hr = codec_->SetOutputType(0, output_type_, 0);
+    if (FAILED(hr))
+    {
+        Log("SetOutputType failed: %08X\n", hr);
+        return;
+    }
+}
+//------------------------------------------------------------------------------
+void DecoderWindows::AllocateOutputSample()
+{
+    HRESULT hr;
+    SafeRelease(&output_buffer_);
+    SafeRelease(&output_sample_);
+
+    MFT_OUTPUT_STREAM_INFO output_info;
+    DWORD allocation_size;
+    DWORD alignment;
+
+    hr = codec_->GetOutputStreamInfo(steam_id_, &output_info);
+    if (FAILED(hr))
+        return;
+
+    if (output_info.dwFlags & (MFT_OUTPUT_STREAM_PROVIDES_SAMPLES | MFT_OUTPUT_STREAM_CAN_PROVIDE_SAMPLES))
+    {
+        /* The MFT will provide an allocated sample. */
+        return;
+    }
+
+    hr = MFCreateSample(&output_sample_);
+    if (FAILED(hr))
+        return;
+
+    allocation_size = output_info.cbSize;
+    alignment = output_info.cbAlignment;
+    if (alignment > 0)
+        hr = MFCreateAlignedMemoryBuffer(allocation_size, alignment - 1, &output_buffer_);
+    else
+        hr = MFCreateMemoryBuffer(allocation_size, &output_buffer_);
+    if (FAILED(hr))
+        return;
+
+    hr = output_sample_->AddBuffer(output_buffer_);
+    if (FAILED(hr))
+        return;
+
+    return;
+}
+//------------------------------------------------------------------------------

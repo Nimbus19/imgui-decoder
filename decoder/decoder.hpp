@@ -16,8 +16,8 @@ public:
     virtual void DestroyTexture() { }
     virtual bool CreateCodec() { return false; }
     virtual void DestroyCodec() { }
-    virtual bool Decode() { return false; }
-    virtual bool Render() { return false; }
+    virtual bool DecodeFrame() { return false; }
+    virtual bool RenderFrame() { return false; }
 
     int width = 64;
     int height = 64;
