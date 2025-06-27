@@ -183,6 +183,7 @@ int main(int, char**)
     }
 
     // Cleanup
+    delete g_Decoder;
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();

@@ -110,7 +110,7 @@ void DecoderUI::DrawPage0()
 
     ImGui::SameLine();
 
-    ImGui::BeginChild("Create", ImVec2(455, 400), false);
+    ImGui::BeginChild("Decoder", ImVec2(455, 400), false);
     {
         // Create Section
         ImGui::BeginChild("Create", ImVec2(-1, 130), true);
@@ -178,6 +178,23 @@ void DecoderUI::DrawPage0()
         ImGui::EndChild();
     }
     ImGui::EndChild();
+    ImGui::Spacing();
+
+    // Show texture
+    ImGui::BeginChild("Texture", ImVec2(917, -1), true);
+    {
+        if (decoder_->textureID != 0)
+        {
+            ImGui::Text("Texture:");
+            ImGui::Text("pointer = %x", decoder_->textureID);
+            ImGui::Text("size = %d x %d", decoder_->width, decoder_->height);
+            ImGui::Spacing();
+
+            ImGui::Image((ImTextureID)(intptr_t)decoder_->textureID,
+                ImVec2((float)decoder_->width / 3.5f, (float)decoder_->height / 3.5f));
+        }
+    }
+    ImGui::EndChild();
 
 }
 //------------------------------------------------------------------------------
@@ -191,7 +208,7 @@ void DecoderUI::DrawPage1()
         ImGui::Text("pointer = %x", decoder_->textureID);
         ImGui::Text("size = %d x %d", decoder_->width, decoder_->height);
         ImGui::Image((ImTextureID)(intptr_t)decoder_->textureID,
-            ImVec2((float)decoder_->width, (float)decoder_->height));
+            ImVec2((float)decoder_->width / 1.5f, (float)decoder_->height / 1.5f));
     }
 }
 //------------------------------------------------------------------------------

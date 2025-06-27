@@ -12,6 +12,7 @@ public:
 
     bool ReadMedia(const char* file_path) override;
     bool CreateTexture(const void* data) override;
+    bool UpdateTexture(const void* data) override;
     void DestroyTexture() override;
     bool CreateCodec() override;
     void DestroyCodec() override;
@@ -19,20 +20,25 @@ public:
     bool RenderFrame() override;
 
 private:
+    template <class T> void SafeRelease(T** ppT);
     void PrintMediaType(struct IMFMediaType* type);
     const char* GuidToName(const GUID& guid);
-    void SetOutputType();
-    void AllocateOutputSample();
+    bool SetOutputType();
+    bool AllocateOutputSample();
 
     struct ID3D11Device* d3d_device_ = nullptr;
     struct ID3D11DeviceContext* d3d_context_ = nullptr;
     struct IDXGISwapChain* d3d_swapchain_ = nullptr;
+    struct ID3D11Texture2D* d3d_texture_ = nullptr;
 
     struct IMFSourceReader* reader_ = nullptr;
     struct IMFMediaType* input_type_ = nullptr;
     struct IMFMediaType* output_type_ = nullptr;
     struct IMFTransform* codec_ = nullptr;
+    struct IMFSample* input_sample_ = nullptr;
     struct IMFSample* output_sample_ = nullptr;
     struct IMFMediaBuffer* output_buffer_ = nullptr;
     DWORD steam_id_ = 0;
+
+    bool previous_not_accepted_ = false;
 };

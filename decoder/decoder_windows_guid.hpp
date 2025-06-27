@@ -42,6 +42,16 @@ static const GuidNameMap g_guidNameMap[] =
     { &MFVideoFormat_AV1, "MFVideoFormat_AV1" },
 
     { &WMFORMAT_MPEG2Video, "WMFORMAT_MPEG2Video" },
+
+    { &MFVideoFormat_ARGB32, "MFVideoFormat_ARGB32" },
+    { &MFVideoFormat_RGB32, "MFVideoFormat_RGB32" },
+    { &MFVideoFormat_RGB24, "MFVideoFormat_RGB24" },
+    { &MFVideoFormat_RGB555, "MFVideoFormat_RGB555" },
+    { &MFVideoFormat_RGB565, "MFVideoFormat_RGB565" },
+    { &MFVideoFormat_NV12, "MFVideoFormat_NV12" },
+    { &MFVideoFormat_YUY2, "MFVideoFormat_YUY2" },
+    { &MFVideoFormat_IYUV, "MFVideoFormat_IYUV" },
+    { &MFVideoFormat_YV12, "MFVideoFormat_YV12" },
     
     // ...
 };

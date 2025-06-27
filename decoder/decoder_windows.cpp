@@ -19,15 +19,6 @@
 #pragma comment(lib, "wmcodecdspuuid.lib")
 
 //------------------------------------------------------------------------------
-template <class T> void SafeRelease(T** ppT)
-{
-    if (*ppT)
-    {
-        (*ppT)->Release();
-        *ppT = NULL;
-    }
-}
-//------------------------------------------------------------------------------
 DecoderWindows::DecoderWindows(Logger& logger, ID3D11Device* d3d_device, 
     ID3D11DeviceContext* d3d_context, IDXGISwapChain* d3d_swapchain)
     : Decoder(logger)
@@ -148,12 +139,11 @@ bool DecoderWindows::CreateTexture(const void* data)
     desc.Height = height;
     desc.MipLevels = 1;
     desc.ArraySize = 1;
-    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    desc.Format = DXGI_FORMAT_R8G8_UNORM;
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-    ID3D11Texture2D* texture = nullptr;
-    HRESULT hr = d3d_device_->CreateTexture2D(&desc, nullptr, &texture);
+    HRESULT hr = d3d_device_->CreateTexture2D(&desc, nullptr, &d3d_texture_);
     if (FAILED(hr))
     {
         Log("CreateTexture: Failed to create texture, HRESULT: %lx", hr);
@@ -161,7 +151,7 @@ bool DecoderWindows::CreateTexture(const void* data)
     }
 
     if (data)
-        d3d_context_->UpdateSubresource(texture, 0, nullptr, data, width * 4, 0);
+        d3d_context_->UpdateSubresource(d3d_texture_, 0, nullptr, data, width * 2, 0);
 
     // create ShaderResourceView
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -170,8 +160,7 @@ bool DecoderWindows::CreateTexture(const void* data)
     srvDesc.Texture2D.MipLevels = 1;
 
     ID3D11ShaderResourceView* srv = nullptr;
-    hr = d3d_device_->CreateShaderResourceView(texture, &srvDesc, &srv);
-    texture->Release(); // SRV will AddRef
+    hr = d3d_device_->CreateShaderResourceView(d3d_texture_, &srvDesc, &srv);
 
     if (FAILED(hr))
     {
@@ -183,12 +172,20 @@ bool DecoderWindows::CreateTexture(const void* data)
     return true;
 }
 //------------------------------------------------------------------------------
+bool DecoderWindows::UpdateTexture(const void* data)
+{
+    if (data)
+        d3d_context_->UpdateSubresource(d3d_texture_, 0, nullptr, data, width * 2, 0);
+    return true;
+}
+//------------------------------------------------------------------------------
 void DecoderWindows::DestroyTexture()
 {
     if (textureID != 0)
     {
         ID3D11ShaderResourceView* srv = reinterpret_cast<ID3D11ShaderResourceView*>(textureID);
-        srv->Release();
+        SafeRelease(&srv);
+        SafeRelease(&d3d_texture_);
         textureID = 0;
     }
 }
@@ -209,9 +206,9 @@ bool DecoderWindows::CreateCodec()
     if (FAILED(hr))
         return false;
 
+    codec_->ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, NULL);
     codec_->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL);
     codec_->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL);
-    codec_->ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, NULL);
     Log("Codec created successfully\n");
 
     return true;
@@ -233,36 +230,43 @@ bool DecoderWindows::DecodeFrame()
     HRESULT hr = S_OK;
     DWORD flags;
     LONGLONG timestamp;
-    IMFSample* sample = nullptr;
 
-    hr = reader_->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, &steam_id_, &flags, &timestamp, &sample);
-
-    if (sample)
+    if (!previous_not_accepted_)
     {
-        hr = codec_->ProcessInput(0, sample, 0);
+        reader_->ReadSample(
+            MF_SOURCE_READER_FIRST_VIDEO_STREAM,
+            0,
+            &steam_id_, &flags, &timestamp, &input_sample_);
+    }
+
+    if (input_sample_)
+    {
+        hr = codec_->ProcessInput(0, input_sample_, 0);
         switch (hr)
         {
         case S_OK:
             Log("ProcessInput : S_OK\n");
+            previous_not_accepted_ = false;
             break;
         case MF_E_NOTACCEPTING:
             Log("ProcessInput : MF_E_NOTACCEPTING\n");
-            break;
+            previous_not_accepted_ = true;
+            return true;
         default:
             Log("ProcessInput FAIL : %08X\n", hr);
             break;
         }
 
         LONGLONG pts;
-        sample->GetSampleTime(&pts);
+        input_sample_->GetSampleTime(&pts);
         Log("PTS : %lld\n", pts);
 
         DWORD total_length = 0;
-        sample->GetTotalLength(&total_length);
+        input_sample_->GetTotalLength(&total_length);
         Log("Size : %d\n", total_length);
     }
 
-    SafeRelease(&sample);
+    SafeRelease(&input_sample_);
     return SUCCEEDED(hr);
 }
 //------------------------------------------------------------------------------
@@ -273,8 +277,8 @@ bool DecoderWindows::RenderFrame()
 
     HRESULT hr = S_OK;
     DWORD output_status = 0;
-    MFT_OUTPUT_DATA_BUFFER output_buffer = { steam_id_, output_sample_, 0, NULL };
-    hr = codec_->ProcessOutput(0, 1, &output_buffer, &output_status);
+    MFT_OUTPUT_DATA_BUFFER output_buffer = { 0, output_sample_, 0, NULL };
+    hr = codec_->ProcessOutput(MFT_OUTPUT_STREAM_LAZY_READ, 1, &output_buffer, &output_status);
 
     switch (hr)
     {
@@ -286,7 +290,7 @@ bool DecoderWindows::RenderFrame()
 
             LONGLONG sample_time;
             hr = output_sample->GetSampleTime(&sample_time);
-            printf("%s : %lld\n", "PTS", sample_time);
+            Log("%s : %lld\n", "PTS", sample_time);
 
             DWORD output_count = 0;
             hr = output_sample->GetBufferCount(&output_count);
@@ -302,12 +306,17 @@ bool DecoderWindows::RenderFrame()
                 hr = output_media_buffer->GetCurrentLength(&total_length);
                 if (FAILED(hr))
                     break;
-                printf("%s : %d\n", "Size", total_length);
+                Log("%s : %d\n", "Size", total_length);
 
                 BYTE* buffer_start;
                 hr = output_media_buffer->Lock(&buffer_start, NULL, NULL);
                 if (FAILED(hr))
                     break;
+
+                if (!textureID)
+                    CreateTexture((uint8_t *)buffer_start);
+                else
+                    UpdateTexture((uint8_t*)buffer_start);
 
                 hr = output_media_buffer->Unlock();
                 if (FAILED(hr))
@@ -324,8 +333,18 @@ bool DecoderWindows::RenderFrame()
         case MF_E_TRANSFORM_STREAM_CHANGE:
         {
             Log("ProcessOutput : MF_E_TRANSFORM_STREAM_CHANGE\n");
-            SetOutputType();
-            AllocateOutputSample();
+
+            if (!SetOutputType())
+            {
+                Log("SetOutputType failed\n");
+                return false;
+            }
+            if (!AllocateOutputSample())
+            {
+                Log("AllocateOutputSample failed\n");
+                return false;
+            }
+            PrintMediaType(output_type_);
             break;
         }
         case MF_E_TRANSFORM_NEED_MORE_INPUT:
@@ -343,13 +362,13 @@ bool DecoderWindows::RenderFrame()
     return SUCCEEDED(hr);
 }
 //------------------------------------------------------------------------------
-void DecoderWindows::SetOutputType()
+bool DecoderWindows::SetOutputType()
 {
     HRESULT hr = S_OK;
 
     MFCreateMediaType(&output_type_);
     output_type_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
-    output_type_->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32);
+    output_type_->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_YUY2);
 
     for (DWORD i = 0; i < 1024; ++i)
     {
@@ -357,7 +376,7 @@ void DecoderWindows::SetOutputType()
             break;
         GUID subtype = {};
         output_type_->GetGUID(MF_MT_SUBTYPE, &subtype);
-        if (subtype == MFVideoFormat_RGB32)
+        if (subtype == MFVideoFormat_YUY2)
             break;
     }
 
@@ -365,11 +384,17 @@ void DecoderWindows::SetOutputType()
     if (FAILED(hr))
     {
         Log("SetOutputType failed: %08X\n", hr);
-        return;
+        return false;
     }
+
+    MFGetAttributeSize(output_type_, MF_MT_FRAME_SIZE, 
+        (UINT32*)&width, 
+        (UINT32*)&height);
+
+    return true;
 }
 //------------------------------------------------------------------------------
-void DecoderWindows::AllocateOutputSample()
+bool DecoderWindows::AllocateOutputSample()
 {
     HRESULT hr;
     SafeRelease(&output_buffer_);
@@ -379,19 +404,19 @@ void DecoderWindows::AllocateOutputSample()
     DWORD allocation_size;
     DWORD alignment;
 
-    hr = codec_->GetOutputStreamInfo(steam_id_, &output_info);
+    hr = codec_->GetOutputStreamInfo(0, &output_info);
     if (FAILED(hr))
-        return;
+        return false;
 
     if (output_info.dwFlags & (MFT_OUTPUT_STREAM_PROVIDES_SAMPLES | MFT_OUTPUT_STREAM_CAN_PROVIDE_SAMPLES))
     {
         /* The MFT will provide an allocated sample. */
-        return;
+        return true;
     }
 
     hr = MFCreateSample(&output_sample_);
     if (FAILED(hr))
-        return;
+        return false;
 
     allocation_size = output_info.cbSize;
     alignment = output_info.cbAlignment;
@@ -400,12 +425,25 @@ void DecoderWindows::AllocateOutputSample()
     else
         hr = MFCreateMemoryBuffer(allocation_size, &output_buffer_);
     if (FAILED(hr))
-        return;
+        return false;
 
     hr = output_sample_->AddBuffer(output_buffer_);
     if (FAILED(hr))
-        return;
+        return false;
 
-    return;
+    return true;
+}
+//------------------------------------------------------------------------------
+template <class T> void DecoderWindows::SafeRelease(T** ppT)
+{
+    if (*ppT)
+    {
+        ULONG ref_count = (*ppT)->Release();
+        if (ref_count != 0)
+        {
+            Log("Object not released, ref_count = %lu\n", ref_count);
+        }
+        *ppT = NULL;
+    }
 }
 //------------------------------------------------------------------------------

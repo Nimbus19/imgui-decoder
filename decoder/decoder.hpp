@@ -10,6 +10,7 @@ public:
 
     virtual bool ReadMedia(const char* filePath) { return false; }
     virtual bool CreateTexture(const void* data) { return false; }
+    virtual bool UpdateTexture(const void* data) { return false; }
     virtual void DestroyTexture() { }
     virtual bool CreateCodec() { return false; }
     virtual void DestroyCodec() { }
