@@ -45,6 +45,9 @@
     <ClInclude Include="..\..\..\decoder\decoder_windows_guid.hpp">
       <Filter>decoder</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\decoder\logger.hpp">
+      <Filter>decoder</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\third_party\imgui\imgui.cpp">
@@ -87,6 +90,9 @@
       <Filter>decoder</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\decoder\decoder_apple.mm">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\decoder\logger.cpp">
       <Filter>decoder</Filter>
     </ClCompile>
   </ItemGroup>

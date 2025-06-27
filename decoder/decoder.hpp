@@ -1,17 +1,14 @@
 #pragma once
 
-#include "decoder_ui.hpp"
 #include <cstdint>
 
 class Decoder
 {
 public:
-    using LogFunc = DecoderUI::LogFunc;
-
-    explicit Decoder(LogFunc ui_logger);
+    explicit Decoder(class Logger& logger);
     virtual ~Decoder();
 
-    virtual bool ReadMedia(const char* filePath, char* outMediaInfo, size_t infoSize) { return false; }
+    virtual bool ReadMedia(const char* filePath) { return false; }
     virtual bool CreateTexture(const void* data) { return false; }
     virtual void DestroyTexture() { }
     virtual bool CreateCodec() { return false; }
@@ -24,5 +21,6 @@ public:
     intptr_t textureID = 0;
 
 protected:
-    LogFunc Log = nullptr;
+    void Log(const char* fmt, ...);
+    class Logger& logger_;
 };

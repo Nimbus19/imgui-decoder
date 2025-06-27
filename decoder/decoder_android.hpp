@@ -5,7 +5,7 @@
 class DecoderAndroid : public Decoder
 {
 public:
-    explicit DecoderAndroid(LogFunc ui_logger);
+    explicit DecoderAndroid(Logger ui_logger);
     virtual ~DecoderAndroid();
 
     bool ReadMedia(const char* filePath, char* outMediaInfo, size_t infoSize) override;

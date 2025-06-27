@@ -6,11 +6,11 @@
 class DecoderWindows : public Decoder
 {
 public:
-    explicit DecoderWindows(LogFunc logger, struct ID3D11Device* d3d_device, 
+    explicit DecoderWindows(class Logger& logger, struct ID3D11Device* d3d_device,
         struct ID3D11DeviceContext* d3d_context, struct IDXGISwapChain* d3d_swapchain);
     virtual ~DecoderWindows();
 
-    bool ReadMedia(const char* file_path, char* media_info, size_t info_size) override;
+    bool ReadMedia(const char* file_path) override;
     bool CreateTexture(const void* data) override;
     void DestroyTexture() override;
     bool CreateCodec() override;
@@ -19,7 +19,7 @@ public:
     bool RenderFrame() override;
 
 private:
-    void PrintMediaType(struct IMFMediaType* type, char* buffer, size_t buffer_size);
+    void PrintMediaType(struct IMFMediaType* type);
     const char* GuidToName(const GUID& guid);
     void SetOutputType();
     void AllocateOutputSample();

@@ -1,3 +1,4 @@
+#include "logger.hpp"
 #include "decoder_windows.hpp"
 #include "decoder_windows_guid.hpp"
 #include <cstdio>
@@ -27,7 +28,7 @@ template <class T> void SafeRelease(T** ppT)
     }
 }
 //------------------------------------------------------------------------------
-DecoderWindows::DecoderWindows(LogFunc logger, ID3D11Device* d3d_device, 
+DecoderWindows::DecoderWindows(Logger& logger, ID3D11Device* d3d_device, 
     ID3D11DeviceContext* d3d_context, IDXGISwapChain* d3d_swapchain)
     : Decoder(logger)
 {
@@ -51,7 +52,7 @@ DecoderWindows::~DecoderWindows()
     MFShutdown();
 }
 //------------------------------------------------------------------------------
-bool DecoderWindows::ReadMedia(const char* file_path, char* media_info, size_t info_size)
+bool DecoderWindows::ReadMedia(const char* file_path)
 {
     SafeRelease(&reader_);
     SafeRelease(&input_type_);
@@ -74,16 +75,15 @@ bool DecoderWindows::ReadMedia(const char* file_path, char* media_info, size_t i
     if (FAILED(hr))
         return false;
 
-    PrintMediaType(input_type_, media_info, info_size);
+    PrintMediaType(input_type_);
 
     return true;
 }
 //------------------------------------------------------------------------------
-void DecoderWindows::PrintMediaType(IMFMediaType* type, char* buffer, size_t buffer_size)
+void DecoderWindows::PrintMediaType(IMFMediaType* type)
 {
-    if (!type || !buffer || buffer_size == 0)
+    if (!type)
         return;
-    buffer[0] = '\0';
 
     UINT32 count = 0;
     if (FAILED(type->GetCount(&count)))
@@ -101,33 +101,27 @@ void DecoderWindows::PrintMediaType(IMFMediaType* type, char* buffer, size_t buf
             LPOLESTR guidStr = nullptr;
             HRESULT hr = StringFromCLSID(guid, &guidStr);
 
-            char line[256] = {};
             const char* nameToShow = guidName ? guidName : "";
 
             if (var.vt == VT_UI4)
-                snprintf(line, sizeof(line), "%s%ws: %u\n", nameToShow, guidName ? L"" : guidStr, var.ulVal);
+                Log("%s%ws: %u\n", nameToShow, guidName ? L"" : guidStr, var.ulVal);
             else if (var.vt == VT_UI8)
-                snprintf(line, sizeof(line), "%s%ws: %llu\n", nameToShow, guidName ? L"" : guidStr, var.uhVal.QuadPart);
+                Log("%s%ws: %llu\n", nameToShow, guidName ? L"" : guidStr, var.uhVal.QuadPart);
             else if (var.vt == VT_R8)
-                snprintf(line, sizeof(line), "%s%ws: %f\n", nameToShow, guidName ? L"" : guidStr, var.dblVal);
+                Log("%s%ws: %f\n", nameToShow, guidName ? L"" : guidStr, var.dblVal);
             else if (var.vt == VT_CLSID && var.puuid)
             {
                 const char* valuName = GuidToName(*var.puuid);
                 const char* valuToShow = valuName ? valuName : "";
                 LPOLESTR valueStr = nullptr;
                 StringFromCLSID(*var.puuid, &valueStr);
-                snprintf(line, sizeof(line), "%s%ws: %s%ws\n", nameToShow, guidName ? L"" : guidStr, valuToShow, valuName ? L"" : valueStr);
+                Log("%s%ws: %s%ws\n", nameToShow, guidName ? L"" : guidStr, valuToShow, valuName ? L"" : valueStr);
                 if (valueStr) CoTaskMemFree(valueStr);
             }
             else if (var.vt == VT_LPWSTR)
-                snprintf(line, sizeof(line), "%s%ws: %ws\n", nameToShow, guidName ? L"" : guidStr, var.pwszVal);
+                Log("%s%ws: %ws\n", nameToShow, guidName ? L"" : guidStr, var.pwszVal);
             else
-                snprintf(line, sizeof(line), "%s%ws: [type %d]\n", nameToShow, guidName ? L"" : guidStr, var.vt);
-
-            size_t curr_len = strlen(buffer);
-            size_t remain = buffer_size > curr_len ? buffer_size - curr_len : 0;
-            if (remain > 1)
-                strncat(buffer, line, remain - 1);
+                Log("%s%ws: [type %d]\n", nameToShow, guidName ? L"" : guidStr, var.vt);
 
             if (guidStr) CoTaskMemFree(guidStr);
             PropVariantClear(&var);
@@ -218,6 +212,7 @@ bool DecoderWindows::CreateCodec()
     codec_->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL);
     codec_->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL);
     codec_->ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, NULL);
+    Log("Codec created successfully\n");
 
     return true;
 }

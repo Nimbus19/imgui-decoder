@@ -1,18 +1,18 @@
 #pragma once
 
 #include "imgui.h"
-#include <cstdint>
-#include <d3d11.h>
 
 class DecoderUI
 {
 public:
-    using LogFunc = void(*)(const char*, ...);
     const char kVersion[8] = "v 0.0.0";
 
     explicit DecoderUI();
 #if defined(_WIN32)
-    explicit DecoderUI(ID3D11Device* d3d_device, ID3D11DeviceContext* d3d_context, IDXGISwapChain* d3d_swapchain);
+    explicit DecoderUI(
+        struct ID3D11Device* d3d_device, 
+        struct ID3D11DeviceContext* d3d_context,
+        struct IDXGISwapChain* d3d_swapchain );
 #elif defined(__ANDROID__)
     explicit DecoderUI();
 #elif defined(__APPLE__)
@@ -21,18 +21,19 @@ public:
     virtual ~DecoderUI();
 
     void DrawUI();
-    void DrawReadUI();
-    void DrawDecodeUI();
+    void DrawPage0();
+    void DrawPage1();
 
 protected:
-    const ImVec4 kGreen = ImVec4(0.1f, 0.5f, 0.1f, 1.0f);
-    const ImVec4 kRed = ImVec4(0.5f, 0.1f, 0.1f, 1.0f);
+    const ImVec4 kRed       = ImVec4(1.00f, 0.23f, 0.19f, 0.4f);
+    const ImVec4 kGreen     = ImVec4(0.30f, 0.85f, 0.39f, 0.4f);
+    const ImVec4 kBlue      = ImVec4(0.00f, 0.48f, 1.00f, 0.4f);
+    const ImVec4 kViolet    = ImVec4(0.69f, 0.32f, 0.87f, 0.4f);
 
-    static void ConsoleLog(const char* fmt, ...);
+    class Logger* logger_;
+    class Decoder* decoder_;
 
-    LogFunc log_ = nullptr;    
-    class Decoder* decoder_ = nullptr;
-    int curr_page_ = 0; // 0: Read, 1: Decode
+    int curr_page_ = 0; // 0: Decoder, 1: Texture
 #if defined(_WIN32)
     char media_path_[256] = "E:\\Videos\\apple_bipbop\\bipbop.mp4";
 #elif defined(__ANDROID__)
@@ -42,8 +43,8 @@ protected:
 #else
     char media_path_[256] = "apple_bipbop/bipbop.mp4";
 #endif
-    char media_text_[2048] = "Media Info";
-    char create_text_[512] = "Create Info";
-    char decode_text_[512] = "Decode Info";
-    char render_text_[512] = "Render Info";
+    char media_text_[2048] = "Media Info\n";
+    char create_text_[512] = "Create Info\n";
+    char decode_text_[512] = "Decode Info\n";
+    char render_text_[512] = "Render Info\n";
 };

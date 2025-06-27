@@ -164,6 +164,7 @@
     <ClInclude Include="..\..\..\decoder\decoder_ui.hpp" />
     <ClInclude Include="..\..\..\decoder\decoder_windows.hpp" />
     <ClInclude Include="..\..\..\decoder\decoder_windows_guid.hpp" />
+    <ClInclude Include="..\..\..\decoder\logger.hpp" />
     <ClInclude Include="..\..\..\third_party\imgui\imconfig.h" />
     <ClInclude Include="..\..\..\third_party\imgui\imgui.h" />
     <ClInclude Include="..\..\..\third_party\imgui\imgui_internal.h" />
@@ -186,6 +187,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\decoder\decoder_ui.cpp" />
     <ClCompile Include="..\..\..\decoder\decoder_windows.cpp" />
+    <ClCompile Include="..\..\..\decoder\logger.cpp" />
     <ClCompile Include="..\..\..\decoder\MfDX11UnityDecoder.cpp" />
     <ClCompile Include="..\..\..\third_party\imgui\imgui.cpp" />
     <ClCompile Include="..\..\..\third_party\imgui\imgui_demo.cpp" />

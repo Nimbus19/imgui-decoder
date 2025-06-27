@@ -10,7 +10,7 @@
 #include <media/NdkMediaExtractor.h>
 
 //------------------------------------------------------------------------------
-DecoderAndroid::DecoderAndroid(Decoder::LogFunc ui_logger)
+DecoderAndroid::DecoderAndroid(Decoder::Logger ui_logger)
     : Decoder(ui_logger)
 {
     app_ = nullptr;
