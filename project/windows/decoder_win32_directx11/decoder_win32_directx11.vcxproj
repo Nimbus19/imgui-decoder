@@ -148,6 +148,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\decoder\include\decoder_export.h" />
     <ClInclude Include="..\..\..\decoder\src\decoder.hpp" />
     <ClInclude Include="..\..\..\decoder\src\decoder_android.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -172,6 +173,7 @@
     <ClInclude Include="..\..\..\third_party\imgui\backends\imgui_impl_win32.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\decoder\include\decoder_export_windows.cpp" />
     <ClCompile Include="..\..\..\decoder\src\decoder.cpp" />
     <ClCompile Include="..\..\..\decoder\src\decoder_android.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -202,6 +204,9 @@
     <None Include="..\..\..\third_party\imgui\misc\debuggers\imgui.natstepfilter" />
     <None Include="..\..\..\third_party\imgui\misc\debuggers\imgui.natvis" />
     <None Include="..\README.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\decoder\CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -48,6 +48,9 @@
     <ClInclude Include="..\..\..\decoder\src\logger.hpp">
       <Filter>decoder</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\decoder\include\decoder_export.h">
+      <Filter>decoder</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\third_party\imgui\imgui.cpp">
@@ -92,6 +95,9 @@
     <ClCompile Include="..\..\..\decoder\src\MfDX11UnityDecoder.cpp">
       <Filter>decoder</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\decoder\include\decoder_export_windows.cpp">
+      <Filter>decoder</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.txt" />
@@ -104,5 +110,10 @@
     <None Include="..\..\..\decoder\src\decoder_apple.mm">
       <Filter>decoder</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\decoder\CMakeLists.txt">
+      <Filter>decoder</Filter>
+    </Text>
   </ItemGroup>
 </Project>
