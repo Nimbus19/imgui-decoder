@@ -20,7 +20,7 @@
 #pragma comment(lib, "wmcodecdspuuid.lib")
 
 //------------------------------------------------------------------------------
-DecoderWindows::DecoderWindows(Logger& logger, ID3D11Device* d3d_device,
+DecoderWindows::DecoderWindows(Logger* logger, ID3D11Device* d3d_device,
     ID3D11DeviceContext* d3d_context, IDXGISwapChain* d3d_swapchain)
     : Decoder(logger)
 {

@@ -20,14 +20,14 @@
 DecoderUI::DecoderUI()
 {
     logger_ = new Logger();
-    decoder_ = new Decoder(*logger_);
+    decoder_ = new Decoder(logger_);
 }
 //------------------------------------------------------------------------------
 #if defined(_WIN32)
 DecoderUI::DecoderUI(ID3D11Device* d3d_device, ID3D11DeviceContext* d3d_context, IDXGISwapChain* d3d_swapchain)
 {
     logger_ = new Logger();
-    decoder_ = new DecoderWindows(*logger_, d3d_device, d3d_context, d3d_swapchain);
+    decoder_ = new DecoderWindows(logger_, d3d_device, d3d_context, d3d_swapchain);
 }
 #endif
 //------------------------------------------------------------------------------

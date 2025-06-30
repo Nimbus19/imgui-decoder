@@ -5,7 +5,7 @@
 class Decoder
 {
 public:
-    explicit Decoder(class Logger& logger);
+    explicit Decoder(class Logger* logger);
     virtual ~Decoder();
 
     virtual bool ReadMedia(const char*) { return false; }
@@ -23,5 +23,7 @@ public:
 
 protected:
     void Log(const char* fmt, ...);
-    class Logger& logger_;
+
+    class Logger* logger_ = nullptr;
+    bool should_release_logger_ = false;
 };
