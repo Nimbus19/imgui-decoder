@@ -44,7 +44,7 @@ protected:
     char media_path_[256] = "apple_bipbop/bipbop.mp4";
 #endif
     char media_text_[2048] = "Media Info\n";
-    char create_text_[512] = "Create Info\n";
-    char decode_text_[512] = "Decode Info\n";
+    char create_text_[2048] = "Create Info\n";
+    char decode_text_[2048] = "Decode Info\n";
     char render_text_[2048] = "Render Info\n";
 };

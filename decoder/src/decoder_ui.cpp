@@ -152,6 +152,18 @@ void DecoderUI::DrawPage0()
                 decoder_->DecodeFrame();
                 logger_->RemoveOutput(decode_text_);
             }
+            ImGui::SameLine();
+            if (ImGui::Button("Decode x 10", ImVec2(160, 40)))
+            {
+                memset(decode_text_, 0, sizeof(decode_text_));
+                logger_->AddOutput(decode_text_, sizeof(decode_text_));
+                for (int i = 0; i < 10; ++i)
+                {
+                    if (!decoder_->DecodeFrame())
+                        break;
+                }
+                logger_->RemoveOutput(decode_text_);
+            }
             ImGui::PopStyleColor();
         }
         ImGui::EndChild();
