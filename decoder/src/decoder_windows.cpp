@@ -58,11 +58,11 @@ bool DecoderWindows::ReadMedia(const char* file_path)
     if (FAILED(hr))
         return false;
 
-    hr = reader_->SetStreamSelection(MF_SOURCE_READER_FIRST_VIDEO_STREAM, TRUE);
+    hr = reader_->SetStreamSelection((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, TRUE);
     if (FAILED(hr))
         return false;
 
-    hr = reader_->GetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, &input_type_);
+    hr = reader_->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, &input_type_);
     if (FAILED(hr))
         return false;
 
@@ -234,7 +234,7 @@ bool DecoderWindows::DecodeFrame()
     if (!previous_not_accepted_)
     {
         reader_->ReadSample(
-            MF_SOURCE_READER_FIRST_VIDEO_STREAM,
+            (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
             0,
             &steam_id_, &flags, &timestamp, &input_sample_);
     }
