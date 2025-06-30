@@ -21,6 +21,7 @@ public:
 
 private:
     template <class T> void SafeRelease(T** ppT);
+    void PrintWinError(const char* funcName, HRESULT hr);
     void PrintMediaType(struct IMFMediaType* type);
     const char* GuidToName(const GUID& guid);
     bool SetOutputType();

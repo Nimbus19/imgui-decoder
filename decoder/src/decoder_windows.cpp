@@ -3,6 +3,7 @@
 #include "decoder_windows_guid.hpp"
 #include <cstdio>
 #include <vector>
+#include <string>
 
 #include <d3d11.h>
 
@@ -19,11 +20,13 @@
 #pragma comment(lib, "wmcodecdspuuid.lib")
 
 //------------------------------------------------------------------------------
-DecoderWindows::DecoderWindows(Logger& logger, ID3D11Device* d3d_device, 
+DecoderWindows::DecoderWindows(Logger& logger, ID3D11Device* d3d_device,
     ID3D11DeviceContext* d3d_context, IDXGISwapChain* d3d_swapchain)
     : Decoder(logger)
 {
-    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    if (FAILED(hr))
+        PrintWinError("CoInitializeEx", hr);
     MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET);
 
     d3d_device_ = d3d_device;
@@ -48,7 +51,7 @@ bool DecoderWindows::ReadMedia(const char* file_path)
     SafeRelease(&reader_);
     SafeRelease(&input_type_);
 
-    HRESULT hr = S_OK;    
+    HRESULT hr = S_OK;
 
     int wstr_size = MultiByteToWideChar(CP_UTF8, 0, file_path, -1, nullptr, 0);
     std::vector<wchar_t> wstr_path(wstr_size);
@@ -88,41 +91,48 @@ void DecoderWindows::PrintMediaType(IMFMediaType* type)
 
         if (SUCCEEDED(type->GetItemByIndex(i, &guid, &var)))
         {
-            const char* guidName = GuidToName(guid);
-            LPOLESTR guidStr = nullptr;
-            HRESULT hr = StringFromCLSID(guid, &guidStr);
+            const char* guid_name = GuidToName(guid);
+            const char* name_to_show = guid_name ? guid_name : "";
 
-            const char* nameToShow = guidName ? guidName : "";
+            LPOLESTR guid_str = nullptr;
+            HRESULT hr = StringFromCLSID(guid, &guid_str);
+            const wchar_t* guid_to_show = !guid_name && SUCCEEDED(hr) ?guid_str : L"";
 
             if (var.vt == VT_UI4)
-                Log("%s%ws: %u\n", nameToShow, guidName ? L"" : guidStr, var.ulVal);
+                Log("%s%ws: %u\n", name_to_show, guid_to_show, var.ulVal);
             else if (var.vt == VT_UI8)
-                Log("%s%ws: %llu\n", nameToShow, guidName ? L"" : guidStr, var.uhVal.QuadPart);
+                Log("%s%ws: %llu\n", name_to_show, guid_to_show, var.uhVal.QuadPart);
             else if (var.vt == VT_R8)
-                Log("%s%ws: %f\n", nameToShow, guidName ? L"" : guidStr, var.dblVal);
+                Log("%s%ws: %f\n", name_to_show, guid_to_show, var.dblVal);
             else if (var.vt == VT_CLSID && var.puuid)
             {
-                const char* valuName = GuidToName(*var.puuid);
-                const char* valuToShow = valuName ? valuName : "";
-                LPOLESTR valueStr = nullptr;
-                StringFromCLSID(*var.puuid, &valueStr);
-                Log("%s%ws: %s%ws\n", nameToShow, guidName ? L"" : guidStr, valuToShow, valuName ? L"" : valueStr);
-                if (valueStr) CoTaskMemFree(valueStr);
+                const char* value_name = GuidToName(*var.puuid);
+                const char* value_to_show = value_name ? value_name : "";
+
+                LPOLESTR value_guid_str = nullptr;
+                hr = StringFromCLSID(*var.puuid, &value_guid_str);
+                const wchar_t* value_guid_to_show = !value_name && SUCCEEDED(hr) ? value_guid_str : L"";
+
+                Log("%s%ws: %s%ws\n", name_to_show, guid_to_show, value_to_show, value_guid_to_show);
+                if (value_guid_str)
+                    CoTaskMemFree(value_guid_str);
             }
             else if (var.vt == VT_LPWSTR)
-                Log("%s%ws: %ws\n", nameToShow, guidName ? L"" : guidStr, var.pwszVal);
+                Log("%s%ws: %ws\n", name_to_show, guid_to_show, var.pwszVal);
             else
-                Log("%s%ws: [type %d]\n", nameToShow, guidName ? L"" : guidStr, var.vt);
+                Log("%s%ws: [type %d]\n", name_to_show, guid_to_show, var.vt);
 
-            if (guidStr) CoTaskMemFree(guidStr);
+            if (guid_str) 
+                CoTaskMemFree(guid_str);
+
             PropVariantClear(&var);
         }
     }
 }
 //------------------------------------------------------------------------------
-const char* DecoderWindows::GuidToName(const GUID& guid) 
+const char* DecoderWindows::GuidToName(const GUID& guid)
 {
-    for (const auto& entry : g_guidNameMap) 
+    for (const auto& entry : g_guidNameMap)
     {
         if (IsEqualGUID(guid, *entry.guid))
             return entry.name;
@@ -139,14 +149,14 @@ bool DecoderWindows::CreateTexture(const void* data)
     desc.Height = height;
     desc.MipLevels = 1;
     desc.ArraySize = 1;
-    desc.Format = DXGI_FORMAT_R8G8_UNORM;
+    desc.Format = DXGI_FORMAT_YUY2;
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
     HRESULT hr = d3d_device_->CreateTexture2D(&desc, nullptr, &d3d_texture_);
     if (FAILED(hr))
     {
-        Log("CreateTexture: Failed to create texture, HRESULT: %lx", hr);
+        PrintWinError("CreateTexture2D", hr);
         return false;
     }
 
@@ -164,7 +174,7 @@ bool DecoderWindows::CreateTexture(const void* data)
 
     if (FAILED(hr))
     {
-        Log("CreateTexture: Failed to create SRV, HRESULT: %lx", hr);
+        PrintWinError("CreateShaderResourceView", hr);
         return false;
     }
 
@@ -217,7 +227,7 @@ bool DecoderWindows::CreateCodec()
 void DecoderWindows::DestroyCodec()
 {
     SafeRelease(&codec_);
-    SafeRelease(&output_type_);    
+    SafeRelease(&output_type_);
     SafeRelease(&output_sample_);
     SafeRelease(&output_buffer_);
 }
@@ -253,7 +263,7 @@ bool DecoderWindows::DecodeFrame()
             previous_not_accepted_ = true;
             return true;
         default:
-            Log("ProcessInput FAIL : %08X\n", hr);
+            PrintWinError("ProcessInput", hr);
             break;
         }
 
@@ -282,81 +292,81 @@ bool DecoderWindows::RenderFrame()
 
     switch (hr)
     {
-        case S_OK:
+    case S_OK:
+    {
+        Log("ProcessOutput : S_OK\n");
+
+        IMFSample* output_sample = output_buffer.pSample;
+
+        LONGLONG sample_time;
+        hr = output_sample->GetSampleTime(&sample_time);
+        Log("%s : %lld\n", "PTS", sample_time);
+
+        DWORD output_count = 0;
+        hr = output_sample->GetBufferCount(&output_count);
+
+        for (DWORD buf_index = 0; buf_index < output_count; buf_index++)
         {
-            Log("ProcessOutput : S_OK\n");
+            IMFMediaBuffer* output_media_buffer;
+            hr = output_sample->GetBufferByIndex(buf_index, &output_media_buffer);
+            if (FAILED(hr))
+                break;
 
-            IMFSample* output_sample = output_buffer.pSample;
+            DWORD total_length = 0;
+            hr = output_media_buffer->GetCurrentLength(&total_length);
+            if (FAILED(hr))
+                break;
+            Log("%s : %d\n", "Size", total_length);
 
-            LONGLONG sample_time;
-            hr = output_sample->GetSampleTime(&sample_time);
-            Log("%s : %lld\n", "PTS", sample_time);
+            BYTE* buffer_start;
+            hr = output_media_buffer->Lock(&buffer_start, NULL, NULL);
+            if (FAILED(hr))
+                break;
 
-            DWORD output_count = 0;
-            hr = output_sample->GetBufferCount(&output_count);
+            if (!textureID)
+                CreateTexture((uint8_t*)buffer_start);
+            else
+                UpdateTexture((uint8_t*)buffer_start);
 
-            for (DWORD buf_index = 0; buf_index < output_count; buf_index++)
-            {
-                IMFMediaBuffer* output_media_buffer;
-                hr = output_sample->GetBufferByIndex(buf_index, &output_media_buffer);
-                if (FAILED(hr))
-                    break;
+            hr = output_media_buffer->Unlock();
+            if (FAILED(hr))
+                break;
 
-                DWORD total_length = 0;
-                hr = output_media_buffer->GetCurrentLength(&total_length);
-                if (FAILED(hr))
-                    break;
-                Log("%s : %d\n", "Size", total_length);
-
-                BYTE* buffer_start;
-                hr = output_media_buffer->Lock(&buffer_start, NULL, NULL);
-                if (FAILED(hr))
-                    break;
-
-                if (!textureID)
-                    CreateTexture((uint8_t *)buffer_start);
-                else
-                    UpdateTexture((uint8_t*)buffer_start);
-
-                hr = output_media_buffer->Unlock();
-                if (FAILED(hr))
-                    break;
-
-                hr = output_media_buffer->SetCurrentLength(0);
-                if (FAILED(hr))
-                    break;
-            }
-
-            break;
+            hr = output_media_buffer->SetCurrentLength(0);
+            if (FAILED(hr))
+                break;
         }
-        case MF_E_TRANSFORM_TYPE_NOT_SET:
-        case MF_E_TRANSFORM_STREAM_CHANGE:
+
+        break;
+    }
+    case MF_E_TRANSFORM_TYPE_NOT_SET:
+    case MF_E_TRANSFORM_STREAM_CHANGE:
+    {
+        Log("ProcessOutput : MF_E_TRANSFORM_STREAM_CHANGE\n");
+
+        if (!SetOutputType())
         {
-            Log("ProcessOutput : MF_E_TRANSFORM_STREAM_CHANGE\n");
-
-            if (!SetOutputType())
-            {
-                Log("SetOutputType failed\n");
-                return false;
-            }
-            if (!AllocateOutputSample())
-            {
-                Log("AllocateOutputSample failed\n");
-                return false;
-            }
-            PrintMediaType(output_type_);
-            break;
+            PrintWinError("SetOutputType", hr);
+            return false;
         }
-        case MF_E_TRANSFORM_NEED_MORE_INPUT:
+        if (!AllocateOutputSample())
         {
-            Log("ProcessOutput : MF_E_TRANSFORM_NEED_MORE_INPUT\n");
-            break;
+            PrintWinError("AllocateOutputSample", hr);
+            return false;
         }
-        default:
-        {
-            Log("ProcessOutput FAIL : %08X\n", hr);
-            break;
-        }
+        PrintMediaType(output_type_);
+        break;
+    }
+    case MF_E_TRANSFORM_NEED_MORE_INPUT:
+    {
+        Log("ProcessOutput : MF_E_TRANSFORM_NEED_MORE_INPUT\n");
+        break;
+    }
+    default:
+    {
+        PrintWinError("ProcessOutput", hr);
+        break;
+    }
     }
 
     return SUCCEEDED(hr);
@@ -383,12 +393,12 @@ bool DecoderWindows::SetOutputType()
     hr = codec_->SetOutputType(0, output_type_, 0);
     if (FAILED(hr))
     {
-        Log("SetOutputType failed: %08X\n", hr);
+        PrintWinError("SetOutputType", hr);
         return false;
     }
 
-    MFGetAttributeSize(output_type_, MF_MT_FRAME_SIZE, 
-        (UINT32*)&width, 
+    MFGetAttributeSize(output_type_, MF_MT_FRAME_SIZE,
+        (UINT32*)&width,
         (UINT32*)&height);
 
     return true;
@@ -445,5 +455,31 @@ template <class T> void DecoderWindows::SafeRelease(T** ppT)
         }
         *ppT = NULL;
     }
+}
+//------------------------------------------------------------------------------
+void DecoderWindows::PrintWinError(const char* funcName, HRESULT hr)
+{
+    LPSTR lpMsgBuf;
+    DWORD bufLen = FormatMessageA(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        hr,
+        MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+        (LPSTR)&lpMsgBuf,
+        0,
+        NULL);
+
+    if (bufLen)
+    {
+        std::string errorMessage(lpMsgBuf, bufLen);
+        Log("%s failed. Error: %s\n", funcName, errorMessage.c_str());
+    }
+    else
+    {
+        Log("%s failed. Error: 0x%08X\n", funcName, hr);
+    }
+    LocalFree(lpMsgBuf);
 }
 //------------------------------------------------------------------------------
