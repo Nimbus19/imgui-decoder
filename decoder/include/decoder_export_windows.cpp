@@ -4,10 +4,9 @@
 #   include <windows.h>
 #endif
 #include "decoder.hpp"
+#include "decoder_windows.hpp"
+#include "decoder_export.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 //------------------------------------------------------------------------------
 Decoder* WINAPI Create()
 {
@@ -33,9 +32,7 @@ void WINAPI Destroy(Decoder* decoder)
     }
 }
 //------------------------------------------------------------------------------
-#ifdef __cplusplus
-}
-#endif
+
 
 //------------------------------------------------------------------------------
 // Link symbol
