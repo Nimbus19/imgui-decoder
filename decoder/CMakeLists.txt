@@ -9,10 +9,12 @@ add_library(
         ${CMAKE_CURRENT_SOURCE_DIR}/src/logger.cpp
 )
 
-target_compile_definitions(
-        ${PROJECT_NAME} PRIVATE
-        NO_CRYPTO
-)
+if(MSVC)
+    target_compile_options(
+        ${PROJECT_NAME} PRIVATE 
+        /utf-8
+    )
+endif()
 
 target_include_directories(
         ${PROJECT_NAME} PRIVATE
