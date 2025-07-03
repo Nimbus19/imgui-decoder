@@ -39,6 +39,7 @@ DecoderWindows::~DecoderWindows()
     SafeRelease(&reader_);
     SafeRelease(&input_type_);
 
+    DestroySRV();
     DestroyTexture();
     DestroyCodec();
 
@@ -140,7 +141,7 @@ const char* DecoderWindows::GuidToName(const GUID& guid)
     return nullptr;
 }
 //------------------------------------------------------------------------------
-bool DecoderWindows::CreateTexture(const void* data)
+bool DecoderWindows::CreateTexture()
 {
     DestroyTexture();
 
@@ -159,45 +160,47 @@ bool DecoderWindows::CreateTexture(const void* data)
         PrintWinError("CreateTexture2D", hr);
         return false;
     }
-
-    if (data)
-        d3d_context_->UpdateSubresource(d3d_texture_, 0, nullptr, data, width * 2, 0);
-
-    // create ShaderResourceView
-    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Format = desc.Format;
-    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = 1;
-
-    ID3D11ShaderResourceView* srv = nullptr;
-    hr = d3d_device_->CreateShaderResourceView(d3d_texture_, &srvDesc, &srv);
-
-    if (FAILED(hr))
-    {
-        PrintWinError("CreateShaderResourceView", hr);
-        return false;
-    }
-
-    textureID = reinterpret_cast<intptr_t>(srv);
+    textureID = reinterpret_cast<intptr_t>(d3d_texture_);
     return true;
 }
 //------------------------------------------------------------------------------
 bool DecoderWindows::UpdateTexture(const void* data)
 {
-    if (data)
+    if (d3d_context_ && data)
         d3d_context_->UpdateSubresource(d3d_texture_, 0, nullptr, data, width * 2, 0);
     return true;
 }
 //------------------------------------------------------------------------------
 void DecoderWindows::DestroyTexture()
 {
-    if (textureID != 0)
+    SafeRelease(&d3d_texture_);
+    d3d_texture_ = nullptr;
+    textureID = 0;
+}
+//------------------------------------------------------------------------------
+ID3D11ShaderResourceView* DecoderWindows::CreateSRV()
+{
+    // create ShaderResourceView
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_YUY2;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = 1;
+
+    HRESULT hr = d3d_device_->CreateShaderResourceView(d3d_texture_, &srvDesc, &srv);
+    if (FAILED(hr))
     {
-        ID3D11ShaderResourceView* srv = reinterpret_cast<ID3D11ShaderResourceView*>(textureID);
-        SafeRelease(&srv);
-        SafeRelease(&d3d_texture_);
-        textureID = 0;
+        PrintWinError("CreateShaderResourceView", hr);
+        return nullptr;
     }
+
+    Log("ShaderResourceView created successfully\n");
+    return srv;
+}
+//------------------------------------------------------------------------------
+void DecoderWindows::DestroySRV()
+{
+    SafeRelease(&srv);
+    srv = nullptr;
 }
 //------------------------------------------------------------------------------
 bool DecoderWindows::CreateCodec()
@@ -324,9 +327,8 @@ bool DecoderWindows::RenderFrame()
                 break;
 
             if (!textureID)
-                CreateTexture((uint8_t*)buffer_start);
-            else
-                UpdateTexture((uint8_t*)buffer_start);
+                CreateTexture();
+            UpdateTexture((uint8_t*)buffer_start);
 
             hr = output_media_buffer->Unlock();
             if (FAILED(hr))

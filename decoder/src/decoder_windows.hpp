@@ -11,13 +11,18 @@ public:
     virtual ~DecoderWindows();
 
     bool ReadMedia(const char* file_path) override;
-    bool CreateTexture(const void* data) override;
+    bool CreateTexture() override;
     bool UpdateTexture(const void* data) override;
     void DestroyTexture() override;
     bool CreateCodec() override;
     void DestroyCodec() override;
     bool DecodeFrame() override;
     bool RenderFrame() override;
+
+    struct ID3D11ShaderResourceView* CreateSRV();
+    void DestroySRV();
+
+    struct ID3D11ShaderResourceView* srv = nullptr;
 
 private:
     template <class T> void SafeRelease(T** ppT);

@@ -71,9 +71,9 @@ ID3D11DeviceContext* WINAPI GetD3D11Context()
 //------------------------------------------------------------------------------
 #if defined(_M_IX86)
 #   pragma comment(linker, "/export:CreateWIN=_CreateWIN@8")
-#   pragma comment(linker, "/export:Decode=_Decode@4")
-#   pragma comment(linker, "/export:Render=_Render@4")
-#   pragma comment(linker, "/export:Destroy=_Destroy@4")
+#   pragma comment(linker, "/export:DecodeWIN=_DecodeWIN@4")
+#   pragma comment(linker, "/export:RenderWIN=_RenderWIN@4")
+#   pragma comment(linker, "/export:DestroyWIN=_DestroyWIN@4")
 #   pragma comment(linker, "/export:GetD3D11Device=_GetD3D11Device@0")
 #   pragma comment(linker, "/export:GetD3D11Context=_GetD3D11Context@0")
 #endif

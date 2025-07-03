@@ -30,6 +30,8 @@ protected:
     const ImVec4 kBlue      = ImVec4(0.00f, 0.48f, 1.00f, 0.4f);
     const ImVec4 kViolet    = ImVec4(0.69f, 0.32f, 0.87f, 0.4f);
 
+    void ShowTexture(float scale);
+
     class Logger* logger_;
     class Decoder* decoder_;
 

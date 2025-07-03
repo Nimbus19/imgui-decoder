@@ -195,16 +195,7 @@ void DecoderUI::DrawPage0()
     // Show texture
     ImGui::BeginChild("Texture", ImVec2(917, -1), true);
     {
-        if (decoder_->textureID != 0)
-        {
-            ImGui::Text("Texture:");
-            ImGui::Text("pointer = %x", decoder_->textureID);
-            ImGui::Text("size = %d x %d", decoder_->width, decoder_->height);
-            ImGui::Spacing();
-
-            ImGui::Image((ImTextureID)(intptr_t)decoder_->textureID,
-                ImVec2((float)decoder_->width / 3.5f, (float)decoder_->height / 3.5f));
-        }
+        ShowTexture(3.5);
     }
     ImGui::EndChild();
 
@@ -214,13 +205,39 @@ void DecoderUI::DrawPage1()
 {
     ImGui::TextColored(ImVec4(1,1,1,1), "Texture");
     // Show texture
-    if (decoder_->textureID != 0)
+    ShowTexture(1.5);
+}
+//------------------------------------------------------------------------------
+void DecoderUI::ShowTexture(float scale)
+{
+    if (decoder_ && decoder_->textureID)
     {
-        ImGui::Text("Texture:");
-        ImGui::Text("pointer = %x", decoder_->textureID);
+        ImTextureID texture = 0;
+
+#if defined(_WIN32)
+        DecoderWindows* decoder_win = (DecoderWindows*)decoder_;
+        if (decoder_win && decoder_win->srv)
+        {
+            texture = (ImTextureID)decoder_win->srv;
+        }
+        else
+        {
+            texture = (ImTextureID)decoder_win->CreateSRV();
+        }
+#elif defined(__ANDROID__)
+
+#elif defined(__APPLE__)
+
+#endif
+        ImGui::Text("pointer = %x", texture);
         ImGui::Text("size = %d x %d", decoder_->width, decoder_->height);
-        ImGui::Image((ImTextureID)(intptr_t)decoder_->textureID,
-            ImVec2((float)decoder_->width / 1.5f, (float)decoder_->height / 1.5f));
+
+        if (texture)
+        {
+            ImGui::Image(texture, 
+                ImVec2((float)decoder_->width / scale, (float)decoder_->height / scale));
+
+        }
     }
 }
 //------------------------------------------------------------------------------
