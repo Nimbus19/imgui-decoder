@@ -149,12 +149,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\decoder\api\decoder_export.h" />
+    <ClInclude Include="..\..\..\decoder\api\decoder_export_windows.h" />
     <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphics.h" />
     <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphicsD3D11.h" />
     <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphicsD3D12.h" />
     <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphicsD3D9.h" />
-    <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphicsMetal.h" />
-    <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphicsVulkan.h" />
+    <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphicsMetal.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphicsVulkan.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\..\..\decoder\api\Unity\IUnityInterface.h" />
     <ClInclude Include="..\..\..\decoder\src\decoder.hpp" />
     <ClInclude Include="..\..\..\decoder\src\decoder_android.hpp">

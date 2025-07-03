@@ -81,6 +81,9 @@
     <ClInclude Include="..\..\..\decoder\api\Unity\IUnityInterface.h">
       <Filter>decoder\api\Unity</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\decoder\api\decoder_export_windows.h">
+      <Filter>decoder\api</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\third_party\imgui\imgui.cpp">
