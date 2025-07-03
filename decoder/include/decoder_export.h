@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-LIB_EXPORT class Decoder* WINAPI Create();
+LIB_EXPORT class Decoder* WINAPI CreateWIN(struct ID3D11Device* d3d_device, struct ID3D11DeviceContext* d3d_context);
 LIB_EXPORT bool WINAPI Decode(class Decoder*);
 LIB_EXPORT bool WINAPI Render(class Decoder*);
 LIB_EXPORT void WINAPI Destroy(class Decoder*);
