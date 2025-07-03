@@ -76,7 +76,7 @@ extern "C" ID3D11Device* GetD3D11Device()
 
 extern "C" ID3D11DeviceContext* GetD3D11Context()
 {
-    if (s_D3D11) 
+    if (s_D3D11)
     {
         ID3D11Device* device = s_D3D11->GetDevice();
         if (device)
@@ -85,7 +85,7 @@ extern "C" ID3D11DeviceContext* GetD3D11Context()
             device->GetImmediateContext(&context);
             return context;
         }
-    }        
+    }
     return nullptr;
 }
 //------------------------------------------------------------------------------
