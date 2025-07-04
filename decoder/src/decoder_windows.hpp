@@ -1,7 +1,7 @@
 #pragma once
 
-#include "decoder.hpp"
 #include <windows.h>
+#include "decoder.hpp"
 
 class DecoderWindows : public Decoder
 {

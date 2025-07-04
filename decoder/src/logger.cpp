@@ -1,4 +1,5 @@
 #include "logger.hpp"
+
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>

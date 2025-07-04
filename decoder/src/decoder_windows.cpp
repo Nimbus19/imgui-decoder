@@ -1,6 +1,5 @@
-#include "logger.hpp"
 #include "decoder_windows.hpp"
-#include "decoder_windows_guid.hpp"
+
 #include <cstdio>
 #include <vector>
 #include <string>
@@ -13,6 +12,9 @@
 #include <mfidl.h>
 #include <mfreadwrite.h>
 #include <wmcodecdsp.h>
+
+#include "logger.hpp"
+#include "decoder_windows_guid.hpp"
 
 #pragma comment(lib, "mfplat")
 #pragma comment(lib, "mfreadwrite.lib")

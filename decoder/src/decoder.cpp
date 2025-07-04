@@ -1,6 +1,8 @@
 #include "decoder.hpp"
-#include "logger.hpp"
+
 #include <cstdarg>
+
+#include "logger.hpp"
 
 //------------------------------------------------------------------------------
 Decoder::Decoder(Logger* logger)

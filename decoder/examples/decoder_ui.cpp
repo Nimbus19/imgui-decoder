@@ -1,16 +1,18 @@
 #include "decoder_ui.hpp"
-#include "decoder.hpp"
-#include "logger.hpp"
+
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
 
+#include "logger.hpp"
+#include "decoder.hpp"
+
 #if defined(_WIN32)
-#   include "decoder_windows.hpp"
 #   include <d3d11.h>
+#   include "decoder_windows.hpp"
 #elif defined(__ANDROID__)
-#   include "decoder_android.hpp"
 #   include <android/log.h>
+#   include "decoder_android.hpp"
 #elif defined(__APPLE__)
 #   include "decoder_apple.hpp"
 #endif
