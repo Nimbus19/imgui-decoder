@@ -85,7 +85,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\third_party\imgui;..\..\..\third_party\imgui\backends;..\..\..\decoder\src;..\..\..\decoder\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\third_party\imgui;..\..\..\third_party\imgui\backends;..\..\..\decoder\src;..\..\..\decoder\api;..\..\..\decoder\examples;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -99,7 +99,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\third_party\imgui;..\..\..\third_party\imgui\backends;..\..\..\decoder\src;..\..\..\decoder\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\third_party\imgui;..\..\..\third_party\imgui\backends;..\..\..\decoder\src;..\..\..\decoder\api;..\..\..\decoder\examples;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -115,7 +115,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\third_party\imgui;..\..\..\third_party\imgui\backends;..\..\..\decoder\src;..\..\..\decoder\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\third_party\imgui;..\..\..\third_party\imgui\backends;..\..\..\decoder\src;..\..\..\decoder\api;..\..\..\decoder\examples;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -134,7 +134,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\third_party\imgui;..\..\..\third_party\imgui\backends;..\..\..\decoder\src;..\..\..\decoder\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\third_party\imgui;..\..\..\third_party\imgui\backends;..\..\..\decoder\src;..\..\..\decoder\api;..\..\..\decoder\examples;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -167,6 +167,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="..\..\..\decoder\api\Unity\IUnityInterface.h" />
+    <ClInclude Include="..\..\..\decoder\examples\decoder_ui.hpp" />
     <ClInclude Include="..\..\..\decoder\src\decoder.hpp" />
     <ClInclude Include="..\..\..\decoder\src\decoder_android.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -180,7 +181,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\..\..\decoder\src\decoder_ui.hpp" />
     <ClInclude Include="..\..\..\decoder\src\decoder_windows.hpp" />
     <ClInclude Include="..\..\..\decoder\src\decoder_windows_guid.hpp" />
     <ClInclude Include="..\..\..\decoder\src\logger.hpp" />
@@ -192,6 +192,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\decoder\api\decoder_export_windows.cpp" />
+    <ClCompile Include="..\..\..\decoder\examples\decoder_ui.cpp" />
     <ClCompile Include="..\..\..\decoder\src\decoder.cpp" />
     <ClCompile Include="..\..\..\decoder\src\decoder_android.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -199,7 +200,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\..\decoder\src\decoder_ui.cpp" />
     <ClCompile Include="..\..\..\decoder\src\decoder_windows.cpp" />
     <ClCompile Include="..\..\..\decoder\src\logger.cpp" />
     <ClCompile Include="..\..\..\decoder\src\MfDX11UnityDecoder.cpp" />
@@ -213,7 +213,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\decoder\BuildCMake.bat" />
+    <None Include="..\..\..\decoder\scripts\BuildCMake.bat" />
     <None Include="..\..\..\decoder\src\decoder_apple.mm">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>

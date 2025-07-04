@@ -12,8 +12,8 @@ setlocal enabledelayedexpansion
 @REM Valid Config : Debug, Release, RelWithDebInfo, MinSizeRel
 set "CM_ABI=x64"
 set "CM_CONFIG=Debug"
-set "CM_WORK_DIR=.\build\%CM_ABI%\"
-set "CM_OUT_DIR=..\..\lib\%CM_ABI%\"
+set "CM_WORK_DIR=..\.\build\%CM_ABI%\"
+set "CM_OUT_DIR=..\..\..\lib\%CM_ABI%\"
 set "CM_GENERATOR=Visual Studio 16 2019"
 
 :Main
