@@ -14,13 +14,16 @@ public:
     void DestroyTexture() override;
     bool CreateCodec() override;
     void DestroyCodec() override;
+    bool DecodeFrame() override;
+    bool RenderFrame() override;
 
 private:
     struct android_app* app_ = nullptr;
     struct AMediaFormat* mediaFormat = nullptr;
+    struct AMediaExtractor* mediaExtractor = nullptr;
     struct AMediaCodec* mediaCodec = nullptr;
 
-    bool GetMediaFormat(struct AMediaFormat*& outMediaFormat, FILE* file);
+    bool GetMediaFormat(FILE* file);
     struct AMediaCodec* createMediaCodec(bool isHardware, const char* codecString, struct AMediaFormat* format);
 
 };
