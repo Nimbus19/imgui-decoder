@@ -4,8 +4,17 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{0587d7a3-f2ce-4d56-b84f-a0005d3bfce6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sources">
+    <Filter Include="decoder">
+      <UniqueIdentifier>{b30e8832-a91e-4dd4-bb5b-49dda3120cc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui_demo">
+      <UniqueIdentifier>{6aeeb2dd-96d4-49dd-b90d-8d95f8cdd478}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui\backends">
       <UniqueIdentifier>{08e36723-ce4f-4cff-9662-c40801cf1acf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="decoder\api">
+      <UniqueIdentifier>{af65fb9a-6922-4c71-a0e9-b554369a6efe}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -19,18 +28,63 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\third_party\imgui\backends\imgui_impl_win32.h">
-      <Filter>sources</Filter>
+      <Filter>imgui\backends</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\third_party\imgui\backends\imgui_impl_dx11.h">
-      <Filter>sources</Filter>
+      <Filter>imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\decoder_ui.hpp">
+      <Filter>imgui_demo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\src\decoder.hpp">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\src\decoder_android.hpp">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\src\decoder_apple.hpp">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\src\decoder_windows.hpp">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\src\decoder_windows_guid.hpp">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\src\logger.hpp">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\api\decoder_export.h">
+      <Filter>decoder\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\api\decoder_export_windows.h">
+      <Filter>decoder\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphics.h">
+      <Filter>decoder\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphicsD3D11.h">
+      <Filter>decoder\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphicsD3D12.h">
+      <Filter>decoder\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphicsD3D9.h">
+      <Filter>decoder\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphicsMetal.h">
+      <Filter>decoder\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\api\Unity\IUnityGraphicsVulkan.h">
+      <Filter>decoder\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\decoder\api\Unity\IUnityInterface.h">
+      <Filter>decoder\api</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\third_party\imgui\imgui.cpp">
       <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\third_party\imgui\imgui_demo.cpp">
       <Filter>imgui</Filter>
@@ -42,13 +96,34 @@
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\third_party\imgui\backends\imgui_impl_win32.cpp">
-      <Filter>sources</Filter>
+      <Filter>imgui\backends</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\third_party\imgui\backends\imgui_impl_dx11.cpp">
-      <Filter>sources</Filter>
+      <Filter>imgui\backends</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\third_party\imgui\imgui_tables.cpp">
       <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\decoder_ui.cpp">
+      <Filter>imgui_demo</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>imgui_demo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\decoder\src\decoder.cpp">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\decoder\src\decoder_android.cpp">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\decoder\src\decoder_windows.cpp">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\decoder\src\logger.cpp">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\decoder\api\decoder_export_windows.cpp">
+      <Filter>decoder\api</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -58,6 +133,9 @@
     </None>
     <None Include="..\..\..\third_party\imgui\misc\debuggers\imgui.natstepfilter">
       <Filter>imgui</Filter>
+    </None>
+    <None Include="..\..\..\decoder\src\decoder_apple.mm">
+      <Filter>decoder</Filter>
     </None>
   </ItemGroup>
 </Project>
