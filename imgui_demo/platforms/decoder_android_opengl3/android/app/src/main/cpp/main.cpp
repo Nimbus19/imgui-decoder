@@ -193,9 +193,9 @@ void Init(struct android_app* app)
 
 void MainLoopStep()
 {
-    ImGuiIO& io = ImGui::GetIO();
     if (g_EglDisplay == EGL_NO_DISPLAY)
         return;
+    ImGuiIO& io = ImGui::GetIO();
 
     // Our state
     // (we use static, which essentially makes the variable globals, as a convenience to keep the decoder code easy to follow)
