@@ -33,7 +33,7 @@
     <ClInclude Include="..\..\..\third_party\imgui\backends\imgui_impl_dx11.h">
       <Filter>imgui\backends</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\decoder_ui.hpp">
+    <ClInclude Include="..\..\ui\decoder_ui.hpp">
       <Filter>imgui_demo</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\decoder\src\decoder.hpp">
@@ -104,7 +104,7 @@
     <ClCompile Include="..\..\..\third_party\imgui\imgui_tables.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\decoder_ui.cpp">
+    <ClCompile Include="..\..\ui\decoder_ui.cpp">
       <Filter>imgui_demo</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
