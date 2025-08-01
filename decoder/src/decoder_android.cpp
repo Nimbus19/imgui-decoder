@@ -167,9 +167,14 @@ bool DecoderAndroid::GetMediaFormat(FILE* file)
         Log("Track %d: %s\n", i, trackMine);
 
         if (strncmp("video/", trackMine, 6) == 0)
+        {
             mediaFormat = trackFormat;
+            AMediaExtractor_selectTrack(mediaExtractor, i);
+        }
         else
+        {
             AMediaFormat_delete(trackFormat);
+        }
     }
     return true;
 }
