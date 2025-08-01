@@ -217,7 +217,6 @@ bool DecoderAndroid::DecodeFrame()
         return false;
 
     AMediaCodecBufferInfo info;
-    media_status_t hr = AMEDIA_ERROR_UNKNOWN;
     ssize_t inputBufferIndex = AMediaCodec_dequeueInputBuffer(mediaCodec, 1000);
     if (inputBufferIndex >= 0)
     {
@@ -226,21 +225,10 @@ bool DecoderAndroid::DecodeFrame()
         if (inputBuffer != nullptr && inputBufferSize > 0)
         {
             ssize_t size = AMediaExtractor_readSampleData(mediaExtractor, inputBuffer, inputBufferSize);
-            if (size < 0)
+            if (size <= 0)
             {
                 Log("Failed to read sample data\n");
                 return false;
-            }
-            if (size == 0)
-            {
-                // End of stream
-//                hr = AMediaCodec_signalEndOfInputStream(mediaCodec);
-//                if (hr != AMEDIA_OK)
-//                {
-//                    Log("Failed to signal end of input stream: %d\n", hr);
-//                    return false;
-//                }
-                Log("End of input stream signaled\n");
             }
             else
             {
@@ -251,16 +239,39 @@ bool DecoderAndroid::DecodeFrame()
                     Log("Failed to get sample time\n");
                     return false;
                 }
+
                 // Queue the input buffer with the data read from the extractor
-                hr = AMediaCodec_queueInputBuffer(mediaCodec, inputBufferIndex, 0, size, presentationTimeUs, 0);
+                media_status_t hr = AMediaCodec_queueInputBuffer(mediaCodec, inputBufferIndex,
+                                                                 0, size, presentationTimeUs, 0);
                 if (hr != AMEDIA_OK)
                 {
                     Log("Failed to queue input buffer: %d\n", hr);
                     return false;
                 }
-                Log("Input buffer queued successfully, size: %zu, PTS: %lld\n", size, presentationTimeUs);
+                Log("Queue Input : AMEDIA_OK\n");
+                Log("PTS : %lld\n", presentationTimeUs);
+                Log("Size : %zu\n", size);
+
+                // Advance the extractor to the next sample
+                bool hasNext = AMediaExtractor_advance(mediaExtractor);
+                if (!hasNext)
+                {
+                    Log("End of stream\n");
+                    ssize_t emptyIndex = AMediaCodec_dequeueInputBuffer(mediaCodec, 1000);
+                    AMediaCodec_queueInputBuffer(mediaCodec, emptyIndex, 0, 0, 0,
+                                                 AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM );
+                }
             }
         }
+        else
+        {
+            Log("Failed to get input buffer\n");
+            return false;
+        }
+    }
+    else
+    {
+        Log("No input buffer available\n");
     }
 
     return true;
