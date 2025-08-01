@@ -6,16 +6,22 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../..)
+
 add_library(${CMAKE_PROJECT_NAME} SHARED
-  ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../../third_party/imgui/imgui.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../../third_party/imgui/imgui_demo.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../../third_party/imgui/imgui_draw.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../../third_party/imgui/imgui_tables.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../../third_party/imgui/imgui_widgets.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../../third_party/imgui/backends/imgui_impl_android.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../../third_party/imgui/backends/imgui_impl_opengl3.cpp
+  main.cpp
+  ${PROJECT_ROOT}/third_party/imgui/imgui.cpp
+  ${PROJECT_ROOT}/third_party/imgui/imgui_demo.cpp
+  ${PROJECT_ROOT}/third_party/imgui/imgui_draw.cpp
+  ${PROJECT_ROOT}/third_party/imgui/imgui_tables.cpp
+  ${PROJECT_ROOT}/third_party/imgui/imgui_widgets.cpp
+  ${PROJECT_ROOT}/third_party/imgui/backends/imgui_impl_android.cpp
+  ${PROJECT_ROOT}/third_party/imgui/backends/imgui_impl_opengl3.cpp
   ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
+  ${PROJECT_ROOT}/decoder/src/logger.cpp
+  ${PROJECT_ROOT}/decoder/src/decoder.cpp
+  ${PROJECT_ROOT}/decoder/src/decoder_android.cpp
+  ${PROJECT_ROOT}/imgui_demo/src/decoder_ui.cpp
 )
 
 set(CMAKE_SHARED_LINKER_FLAGS
@@ -27,9 +33,11 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../../third_party/imgui
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../../third_party/imgui/backends
+  ${PROJECT_ROOT}/third_party/imgui
+  ${PROJECT_ROOT}/third_party/imgui/backends
   ${ANDROID_NDK}/sources/android/native_app_glue
+  ${PROJECT_ROOT}/decoder/src
+  ${PROJECT_ROOT}/imgui_demo/src
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
@@ -37,4 +45,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
   EGL
   GLESv3
   log
+  mediandk
 )
