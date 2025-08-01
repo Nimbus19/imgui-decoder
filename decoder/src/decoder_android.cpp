@@ -325,14 +325,39 @@ bool DecoderAndroid::RenderFrame()
             UpdateTexture(outputBuffer); // Update texture with decoded frame data
         }
         AMediaCodec_releaseOutputBuffer(mediaCodec, outputBufferIndex, true);
+        Log("Output buffer rendered successfully\n");
+        return true;
     }
     else if (outputBufferIndex == AMEDIACODEC_INFO_OUTPUT_FORMAT_CHANGED)
     {
         Log("Output format changed\n");
+        struct AMediaFormat* newFormat = AMediaCodec_getOutputFormat(mediaCodec);
+        if (newFormat)
+        {
+            AMediaFormat_getInt32(newFormat, "width", &width);
+            AMediaFormat_getInt32(newFormat, "height", &height);
+            Log("New output format: width=%d, height=%d\n", width, height);
+            AMediaFormat_delete(newFormat);
+            if (textureID == 0)
+                CreateTexture(); // Create texture if not already created
+            else
+                UpdateTexture(nullptr); // Update texture size if already created
+            return true;
+        }
+        else
+        {
+            Log("Failed to get new output format\n");
+            return false;
+        }
     }
     else if (outputBufferIndex == AMEDIACODEC_INFO_TRY_AGAIN_LATER)
     {
-        Log("No output available\n");
+        Log("Try again later\n");
+        return true;
     }
-    return true;
+    else
+    {
+        Log("Failed to dequeue output buffer: %zd\n", outputBufferIndex);
+    }
+    return false;
 }

@@ -243,15 +243,13 @@ void DecoderUI::ShowTexture(float scale)
 #if defined(_WIN32)
         DecoderWindows* decoder_win = (DecoderWindows*)decoder_;
         if (decoder_win && decoder_win->srv)
-        {
             texture = (ImTextureID)decoder_win->srv;
-        }
         else
-        {
             texture = (ImTextureID)decoder_win->CreateSRV();
-        }
 #elif defined(__ANDROID__)
-
+        DecoderAndroid* decoder_android = (DecoderAndroid*)decoder_;
+        if (decoder_android && decoder_android->textureID)
+            texture = (ImTextureID)(intptr_t)decoder_android->textureID;
 #elif defined(__APPLE__)
 
 #endif
@@ -262,7 +260,6 @@ void DecoderUI::ShowTexture(float scale)
         {
             ImGui::Image(texture, 
                 ImVec2((float)decoder_->width / scale, (float)decoder_->height / scale));
-
         }
     }
 }
