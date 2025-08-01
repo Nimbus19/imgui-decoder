@@ -16,10 +16,10 @@
 #include "decoder_android_OMX.hpp"
 
 #define CODEC_DIRECT_OUTPUT 1 // Enable decoder direct output to texture
-#define CODEC_OUTPUT_FORMAT OMX_COLOR_FormatYCbYCr // Each 4 bytes represent two pixels: Y0 U0 Y1 V0
-#define PIXEL_WIDTH 2 // YCbYCr format has 2 bytes per pixel
-#define TEXTURE_FORMAT GL_ALPHA
-#define TEXEL_WIDTH 1 // GL_ALPHA format has 1 byte per texel
+#define CODEC_OUTPUT_FORMAT OMX_COLOR_FormatYUV420SemiPlanar
+#define PIXEL_WIDTH 2
+#define TEXTURE_FORMAT GL_LUMINANCE
+#define TEXEL_WIDTH 1
 
 //------------------------------------------------------------------------------
 DecoderAndroid::DecoderAndroid(Logger* ui_logger, android_app* g_app)
@@ -71,7 +71,7 @@ bool DecoderAndroid::CreateTexture()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glTexImage2D(GL_TEXTURE_2D, 0,
-                 TEXTURE_FORMAT, width, height * PIXEL_WIDTH, 0,
+                 TEXTURE_FORMAT, width, height, 0,
                  TEXTURE_FORMAT, GL_UNSIGNED_BYTE, nullptr);
     glBindTexture(GL_TEXTURE_2D, 0);
     glFlush();
@@ -93,7 +93,7 @@ bool DecoderAndroid::UpdateTexture(const void* data)
         return false;
     }
     glBindTexture(GL_TEXTURE_2D, (GLuint)textureID);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height * PIXEL_WIDTH,
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
                     TEXTURE_FORMAT, GL_UNSIGNED_BYTE,
                     data); // Update texture with new data
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -199,7 +199,6 @@ bool DecoderAndroid::GetMediaFormat(FILE* file)
         if (strncmp("video/", trackMine, 6) == 0)
         {
             mediaFormat = trackFormat;
-            AMediaFormat_setInt32(mediaFormat, "color-format", CODEC_OUTPUT_FORMAT);
             AMediaExtractor_selectTrack(mediaExtractor, i);
         }
         else
@@ -220,6 +219,8 @@ AMediaCodec* DecoderAndroid::createMediaCodec(bool isHardware, const char* codec
 
     if (codec == nullptr)
         return nullptr;
+
+    AMediaFormat_setInt32(mediaFormat, "color-format", CODEC_OUTPUT_FORMAT);
 
     media_status_t hr = AMediaCodec_configure(codec, mediaFormat, nullptr, nullptr, 0);
     if (hr != AMEDIA_OK)

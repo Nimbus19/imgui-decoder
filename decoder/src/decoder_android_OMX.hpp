@@ -20,16 +20,16 @@ typedef enum OMX_COLOR_FORMATTYPE {
     OMX_COLOR_Format32bitARGB8888,
     OMX_COLOR_FormatYUV411Planar,
     OMX_COLOR_FormatYUV411PackedPlanar,
-    OMX_COLOR_FormatYUV420Planar,
+    OMX_COLOR_FormatYUV420Planar,           // 19 (I420, YV12)
     OMX_COLOR_FormatYUV420PackedPlanar,
-    OMX_COLOR_FormatYUV420SemiPlanar,
+    OMX_COLOR_FormatYUV420SemiPlanar,       // 21 (NV12, NV21)
     OMX_COLOR_FormatYUV422Planar,
     OMX_COLOR_FormatYUV422PackedPlanar,
     OMX_COLOR_FormatYUV422SemiPlanar,
-    OMX_COLOR_FormatYCbYCr,
-    OMX_COLOR_FormatYCrYCb,
-    OMX_COLOR_FormatCbYCrY,
-    OMX_COLOR_FormatCrYCbY,
+    OMX_COLOR_FormatYCbYCr,                 // 25 (YUY2, UYVY)
+    OMX_COLOR_FormatYCrYCb,                 // 26 (YVYU, VYUY)
+    OMX_COLOR_FormatCbYCrY,                 // 27 (YV12, IYUV)
+    OMX_COLOR_FormatCrYCbY,                 // 28 (YVU9, YV24)
     OMX_COLOR_FormatYUV444Interleaved,
     OMX_COLOR_FormatRawBayer8bit,
     OMX_COLOR_FormatRawBayer10bit,
