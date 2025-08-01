@@ -11,6 +11,7 @@ public:
 
     bool ReadMedia(const char* filePath) override;
     bool CreateTexture() override;
+    bool UpdateTexture(const void*) override;
     void DestroyTexture() override;
     bool CreateCodec() override;
     void DestroyCodec() override;

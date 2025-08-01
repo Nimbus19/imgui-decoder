@@ -22,7 +22,7 @@
 #pragma comment(lib, "wmcodecdspuuid.lib")
 
 #define CODEC_DIRECT_OUTPUT 1 // Enable decoder direct output to texture
-#define CODEC_OUTPUT_FORMAT MFVideoFormat_YUY2 
+#define CODEC_OUTPUT_FORMAT MFVideoFormat_YUY2 // Each 4 bytes represent two pixels: Y0 U0 Y1 V0
 #define PIXEL_WIDTH 2 // YUY2 format has 2 bytes per pixel
 #define TEXTURE_FORMAT DXGI_FORMAT_A8_UNORM
 #define TEXEL_WIDTH 1 // A8_UNORM format has 1 byte per texel
