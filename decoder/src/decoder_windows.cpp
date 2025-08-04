@@ -22,10 +22,9 @@
 #pragma comment(lib, "wmcodecdspuuid.lib")
 
 #define CODEC_DIRECT_OUTPUT 1 // Enable decoder direct output to texture
-#define CODEC_OUTPUT_FORMAT MFVideoFormat_YUY2 // Each 4 bytes represent two pixels: Y0 U0 Y1 V0
-#define PIXEL_WIDTH 2 // YUY2 format has 2 bytes per pixel
-#define TEXTURE_FORMAT DXGI_FORMAT_A8_UNORM
-#define TEXEL_WIDTH 1 // A8_UNORM format has 1 byte per texel
+#define CODEC_OUTPUT_FORMAT MFVideoFormat_NV12 // Each 3 bytes represent 2 pixels
+#define PIXEL_WIDTH 1.5f // NV12 format has 1.5 bytes per pixel
+#define TEXTURE_FORMAT DXGI_FORMAT_R8_UNORM
 
 //------------------------------------------------------------------------------
 DecoderWindows::DecoderWindows(Logger* logger, ID3D11Device* d3d_device,
@@ -153,9 +152,12 @@ bool DecoderWindows::CreateTexture()
 {
     DestroyTexture();
 
+    texture_width = video_width;
+    texture_height = (int)(video_height * PIXEL_WIDTH);
+
     D3D11_TEXTURE2D_DESC desc = {};
-    desc.Width = width * PIXEL_WIDTH;
-    desc.Height = height;
+    desc.Width = texture_width;
+    desc.Height = texture_height;
     desc.MipLevels = 1;
     desc.ArraySize = 1;
     desc.Format = TEXTURE_FORMAT;
@@ -176,7 +178,7 @@ bool DecoderWindows::CreateTexture()
 bool DecoderWindows::UpdateTexture(const void* data)
 {
     if (d3d_context_ && data)
-        d3d_context_->UpdateSubresource(d3d_texture_, 0, nullptr, data, width * PIXEL_WIDTH * TEXEL_WIDTH, 0);
+        d3d_context_->UpdateSubresource(d3d_texture_, 0, nullptr, data, texture_width, 0);
     return true;
 }
 //------------------------------------------------------------------------------
@@ -414,11 +416,11 @@ bool DecoderWindows::SetOutputType()
     UINT32 w = 0, h = 0;
     MFGetAttributeSize(output_type_, MF_MT_FRAME_SIZE, &w, &h);
 
-    if (width == w && height == h)
+    if (video_width == w && video_height == h)
         return false;
 
-    width = w;
-    height = h;
+    video_width = w;
+    video_height = h;
 
     return true;
 }

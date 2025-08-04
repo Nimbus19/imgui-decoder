@@ -17,8 +17,10 @@ public:
     virtual bool DecodeFrame() { return false; }
     virtual bool RenderFrame() { return false; }
 
-    int width = 64;
-    int height = 64;
+    int video_width = 64;
+    int video_height = 64;
+    int texture_width = 64;
+    int texture_height = 64;
     intptr_t textureID = 0;
 
 protected:

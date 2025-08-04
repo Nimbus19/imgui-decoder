@@ -16,10 +16,9 @@
 #include "decoder_android_OMX.hpp"
 
 #define CODEC_DIRECT_OUTPUT 1 // Enable decoder direct output to texture
-#define CODEC_OUTPUT_FORMAT OMX_COLOR_FormatYUV420SemiPlanar
-#define PIXEL_WIDTH 2
+#define CODEC_OUTPUT_FORMAT OMX_COLOR_FormatYUV420SemiPlanar // NV12 or NV21
+#define PIXEL_WIDTH 1.5 // NV12 format has 1.5 bytes per pixel
 #define TEXTURE_FORMAT GL_LUMINANCE
-#define TEXEL_WIDTH 1
 
 //------------------------------------------------------------------------------
 DecoderAndroid::DecoderAndroid(Logger* ui_logger, android_app* g_app)
@@ -59,6 +58,11 @@ bool DecoderAndroid::ReadMedia(const char* filePath)
 //------------------------------------------------------------------------------
 bool DecoderAndroid::CreateTexture()
 {
+    DestroyTexture();
+
+    texture_width = video_width;
+    texture_height = (int)(video_height * PIXEL_WIDTH);
+
     // create texture
     GLuint glTexture;
     glGenTextures(1, &glTexture);
@@ -71,7 +75,7 @@ bool DecoderAndroid::CreateTexture()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glTexImage2D(GL_TEXTURE_2D, 0,
-                 TEXTURE_FORMAT, width, height, 0,
+                 TEXTURE_FORMAT, texture_width, texture_height, 0,
                  TEXTURE_FORMAT, GL_UNSIGNED_BYTE, nullptr);
     glBindTexture(GL_TEXTURE_2D, 0);
     glFlush();
@@ -93,7 +97,8 @@ bool DecoderAndroid::UpdateTexture(const void* data)
         return false;
     }
     glBindTexture(GL_TEXTURE_2D, (GLuint)textureID);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+                    texture_width, texture_height,
                     TEXTURE_FORMAT, GL_UNSIGNED_BYTE,
                     data); // Update texture with new data
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -335,9 +340,9 @@ bool DecoderAndroid::RenderFrame()
         struct AMediaFormat* newFormat = AMediaCodec_getOutputFormat(mediaCodec);
         if (newFormat)
         {
-            AMediaFormat_getInt32(newFormat, "width", &width);
-            AMediaFormat_getInt32(newFormat, "height", &height);
-            Log("New output format: width=%d, height=%d\n", width, height);
+            AMediaFormat_getInt32(newFormat, "width", &video_width);
+            AMediaFormat_getInt32(newFormat, "height", &video_height);
+            Log("New output format: width=%d, height=%d\n", video_width, video_height);
             AMediaFormat_delete(newFormat);
             if (textureID == 0)
                 CreateTexture(); // Create texture if not already created

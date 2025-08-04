@@ -221,7 +221,7 @@ void DecoderUI::DrawPage0()
     // Show texture
     ImGui::BeginChild("Texture", ImVec2(917, -1), true);
     {
-        ShowTexture(3.5);
+        ShowTexture(5 / HEIGH_RATIO / HEIGH_RATIO);
     }
     ImGui::EndChild();
 
@@ -231,7 +231,7 @@ void DecoderUI::DrawPage1()
 {
     ImGui::TextColored(ImVec4(1,1,1,1), "Texture");
     // Show texture
-    ShowTexture(1.5);
+    ShowTexture(1.6 / HEIGH_RATIO / HEIGH_RATIO);
 }
 //------------------------------------------------------------------------------
 void DecoderUI::ShowTexture(float scale)
@@ -253,13 +253,13 @@ void DecoderUI::ShowTexture(float scale)
 #elif defined(__APPLE__)
 
 #endif
-        ImGui::Text("pointer = %x", texture);
-        ImGui::Text("size = %d x %d", decoder_->width, decoder_->height);
+        ImGui::Text("Texture ID = 0x%x", texture);
+        ImGui::Text("Size = %d x %d", decoder_->texture_width, decoder_->texture_height);
 
         if (texture)
         {
             ImGui::Image(texture, 
-                ImVec2((float)decoder_->width / scale, (float)decoder_->height / scale));
+                ImVec2((float)decoder_->texture_width / scale, (float)decoder_->texture_height / scale));
         }
     }
 }
