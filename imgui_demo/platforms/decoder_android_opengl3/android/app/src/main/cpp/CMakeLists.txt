@@ -21,6 +21,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
   ${PROJECT_ROOT}/decoder/src/logger.cpp
   ${PROJECT_ROOT}/decoder/src/decoder.cpp
   ${PROJECT_ROOT}/decoder/src/decoder_android.cpp
+  ${PROJECT_ROOT}/decoder/src/decoder_android_surface.cpp
   ${PROJECT_ROOT}/imgui_demo/ui/decoder_ui.cpp
 )
 

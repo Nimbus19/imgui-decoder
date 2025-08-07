@@ -5,15 +5,16 @@
 #include <cstdarg>
 
 #include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 #include <android/log.h>
+#include <android_native_app_glue.h>
 #include <media/NdkMediaCodec.h>
 #include <media/NdkMediaExtractor.h>
 #include <media/NdkMediaFormat.h>
 
-//#include "imgui_impl_android.h"
-//#include "imgui_impl_opengl3.h"
 #include "logger.hpp"
 #include "decoder_android_OMX.hpp"
+#include "decoder_android_surface.hpp"
 
 #define CODEC_DIRECT_OUTPUT 1 // Enable decoder direct output to texture
 #define CODEC_OUTPUT_FORMAT OMX_COLOR_FormatYUV420SemiPlanar // NV12 or NV21
@@ -29,6 +30,7 @@ DecoderAndroid::DecoderAndroid(Logger* ui_logger, android_app* g_app)
 //------------------------------------------------------------------------------
 DecoderAndroid::~DecoderAndroid()
 {
+    DestroyCodec();
     if (mediaFormat != nullptr)
     {
         AMediaFormat_delete(mediaFormat);
@@ -39,7 +41,12 @@ DecoderAndroid::~DecoderAndroid()
         AMediaExtractor_delete(mediaExtractor);
         mediaExtractor = nullptr;
     }
-    DestroyCodec();
+    if (surface != nullptr)
+    {
+        delete surface;
+        surface = nullptr;
+        nativeWindow = nullptr;
+    }
     DestroyTexture();
 }
 //------------------------------------------------------------------------------
@@ -66,18 +73,18 @@ bool DecoderAndroid::CreateTexture()
     // create texture
     GLuint glTexture;
     glGenTextures(1, &glTexture);
-    glBindTexture(GL_TEXTURE_2D, glTexture);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, glTexture);
 
     // set texture parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0,
+    glTexImage2D(GL_TEXTURE_EXTERNAL_OES, 0,
                  TEXTURE_FORMAT, texture_width, texture_height, 0,
                  TEXTURE_FORMAT, GL_UNSIGNED_BYTE, nullptr);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
     glFlush();
 
     textureID = (intptr_t)glTexture;
@@ -96,12 +103,12 @@ bool DecoderAndroid::UpdateTexture(const void* data)
         Log("Data pointer is null\n");
         return false;
     }
-    glBindTexture(GL_TEXTURE_2D, (GLuint)textureID);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, (GLuint)textureID);
+    glTexSubImage2D(GL_TEXTURE_EXTERNAL_OES, 0, 0, 0,
                     texture_width, texture_height,
                     TEXTURE_FORMAT, GL_UNSIGNED_BYTE,
                     data); // Update texture with new data
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
     glFlush();
     Log("Texture updated successfully\n");
     return true;
@@ -197,14 +204,18 @@ bool DecoderAndroid::GetMediaFormat(FILE* file)
     {
         AMediaFormat* trackFormat = AMediaExtractor_getTrackFormat(mediaExtractor, i);
         const char* trackMine = "";
-        AMediaFormat_getString(trackFormat, "mime", &trackMine);
 
+        AMediaFormat_getString(trackFormat, "mime", &trackMine);
         Log("Track %d: %s\n", i, trackMine);
 
         if (strncmp("video/", trackMine, 6) == 0)
         {
             mediaFormat = trackFormat;
             AMediaExtractor_selectTrack(mediaExtractor, i);
+
+            AMediaFormat_getInt32(mediaFormat, "width", &video_width);
+            AMediaFormat_getInt32(mediaFormat, "height", &video_height);
+            Log("Track %d: width=%d, height=%d\n", i, video_width, video_height);
         }
         else
         {
@@ -216,6 +227,16 @@ bool DecoderAndroid::GetMediaFormat(FILE* file)
 //------------------------------------------------------------------------------
 AMediaCodec* DecoderAndroid::createMediaCodec(bool isHardware, const char* codecString, AMediaFormat* format)
 {
+    nativeWindow = nullptr;
+#if CODEC_DIRECT_OUTPUT
+    if (CreateTexture())
+    {
+        if (surface)
+            delete surface;
+        surface = new AndroidSurface(logger_, app_);
+        nativeWindow = surface->CreateFromTexture(textureID);
+    }
+#endif
     AMediaCodec* codec = nullptr;
     if (isHardware)
         codec = AMediaCodec_createDecoderByType(codecString);
@@ -226,8 +247,7 @@ AMediaCodec* DecoderAndroid::createMediaCodec(bool isHardware, const char* codec
         return nullptr;
 
     AMediaFormat_setInt32(mediaFormat, "color-format", CODEC_OUTPUT_FORMAT);
-
-    media_status_t hr = AMediaCodec_configure(codec, mediaFormat, nullptr, nullptr, 0);
+    media_status_t hr = AMediaCodec_configure(codec, mediaFormat, nativeWindow, nullptr, 0);
     if (hr != AMEDIA_OK)
     {
         Log("Failed to configure codec\n");
@@ -323,6 +343,12 @@ bool DecoderAndroid::RenderFrame()
     ssize_t outputBufferIndex = AMediaCodec_dequeueOutputBuffer(mediaCodec, &info, 1000);
     if (outputBufferIndex >= 0)
     {
+#if CODEC_DIRECT_OUTPUT
+        size_t outputBufferSize;
+        AMediaCodec_getOutputBuffer(mediaCodec, outputBufferIndex, &outputBufferSize);
+        AMediaCodec_releaseOutputBuffer(mediaCodec, outputBufferIndex, true);
+        surface->Update();
+#else
         size_t outputBufferSize;
         uint8_t* outputBuffer = AMediaCodec_getOutputBuffer(mediaCodec, outputBufferIndex, &outputBufferSize);
         if (outputBuffer != nullptr && outputBufferSize > 0)
@@ -331,6 +357,7 @@ bool DecoderAndroid::RenderFrame()
             UpdateTexture(outputBuffer); // Update texture with decoded frame data
         }
         AMediaCodec_releaseOutputBuffer(mediaCodec, outputBufferIndex, true);
+#endif
         Log("Output buffer rendered successfully\n");
         return true;
     }
@@ -344,10 +371,12 @@ bool DecoderAndroid::RenderFrame()
             AMediaFormat_getInt32(newFormat, "height", &video_height);
             Log("New output format: width=%d, height=%d\n", video_width, video_height);
             AMediaFormat_delete(newFormat);
+#if !CODEC_DIRECT_OUTPUT
             if (textureID == 0)
                 CreateTexture(); // Create texture if not already created
             else
-                UpdateTexture(nullptr); // Update texture size if already created
+                Update(nullptr); // Update texture size if already created
+#endif
             return true;
         }
         else
