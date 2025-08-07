@@ -45,7 +45,6 @@ DecoderAndroid::~DecoderAndroid()
     {
         delete surface;
         surface = nullptr;
-        nativeWindow = nullptr;
     }
     DestroyTexture();
 }
@@ -73,15 +72,16 @@ bool DecoderAndroid::CreateTexture()
     // create texture
     GLuint glTexture;
     glGenTextures(1, &glTexture);
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, glTexture);
+    GLenum target = CODEC_DIRECT_OUTPUT ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D;
+    glBindTexture(target, glTexture);
 
     // set texture parameters
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_EXTERNAL_OES, 0,
+    glTexImage2D(target, 0,
                  TEXTURE_FORMAT, texture_width, texture_height, 0,
                  TEXTURE_FORMAT, GL_UNSIGNED_BYTE, nullptr);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
@@ -103,12 +103,13 @@ bool DecoderAndroid::UpdateTexture(const void* data)
         Log("Data pointer is null\n");
         return false;
     }
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, (GLuint)textureID);
-    glTexSubImage2D(GL_TEXTURE_EXTERNAL_OES, 0, 0, 0,
+    GLenum target = CODEC_DIRECT_OUTPUT ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D;
+    glBindTexture(target, (GLuint)textureID);
+    glTexSubImage2D(target, 0, 0, 0,
                     texture_width, texture_height,
                     TEXTURE_FORMAT, GL_UNSIGNED_BYTE,
                     data); // Update texture with new data
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+    glBindTexture(target, 0);
     glFlush();
     Log("Texture updated successfully\n");
     return true;
@@ -227,7 +228,7 @@ bool DecoderAndroid::GetMediaFormat(FILE* file)
 //------------------------------------------------------------------------------
 AMediaCodec* DecoderAndroid::createMediaCodec(bool isHardware, const char* codecString, AMediaFormat* format)
 {
-    nativeWindow = nullptr;
+    ANativeWindow* nativeWindow = nullptr;
 #if CODEC_DIRECT_OUTPUT
     if (CreateTexture())
     {
@@ -375,7 +376,7 @@ bool DecoderAndroid::RenderFrame()
             if (textureID == 0)
                 CreateTexture(); // Create texture if not already created
             else
-                Update(nullptr); // Update texture size if already created
+                UpdateTexture(nullptr); // Update texture size if already created
 #endif
             return true;
         }

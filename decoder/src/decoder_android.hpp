@@ -23,7 +23,6 @@ private:
     struct AMediaFormat* mediaFormat = nullptr;
     struct AMediaExtractor* mediaExtractor = nullptr;
     struct AMediaCodec* mediaCodec = nullptr;
-    struct ANativeWindow* nativeWindow = nullptr;
     class  AndroidSurface* surface = nullptr;
 
     bool GetMediaFormat(FILE* file);
