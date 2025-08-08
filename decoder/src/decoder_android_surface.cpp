@@ -61,6 +61,9 @@ void AndroidSurface::Destroy()
     }
     if (surfaceTexture_ != nullptr)
     {
+        jclass surfaceTextureClass = env_->GetObjectClass(surfaceTexture_);
+        jmethodID releaseMethod = env_->GetMethodID(surfaceTextureClass, "release", "()V");
+        env_->CallVoidMethod(surfaceTexture_, releaseMethod);
         env_->DeleteGlobalRef(surfaceTexture_);
         surfaceTexture_ = nullptr;
     }
@@ -82,38 +85,13 @@ bool AndroidSurface::CreateSurfaceTexture(int textureID)
         return false;
     }
 
-    surfaceTexture_ = env_->NewObject(surfaceTextureClass, constructor, textureID);
-    if (surfaceTexture_ == nullptr)
+    jobject localObj = env_->NewObject(surfaceTextureClass, constructor, textureID);
+    if (localObj == nullptr)
     {
         logger_->Log("Failed to create SurfaceTexture object\n");
         return false;
     }
-
-    return true;
-}
-//------------------------------------------------------------------------------
-bool AndroidSurface::CreateSurfaceTexture()
-{
-    jclass surfaceTextureClass = env_->FindClass("android/graphics/SurfaceTexture");
-    if (surfaceTextureClass == nullptr)
-    {
-        logger_->Log("Failed to find SurfaceTexture class\n");
-        return false;
-    }
-
-    jmethodID constructor = env_->GetMethodID(surfaceTextureClass, "<init>", "(Z)V");
-    if (constructor == nullptr)
-    {
-        logger_->Log("Failed to find SurfaceTexture constructor\n");
-        return false;
-    }
-
-    surfaceTexture_ = env_->NewObject(surfaceTextureClass, constructor, false);
-    if (surfaceTexture_ == nullptr)
-    {
-        logger_->Log("Failed to create SurfaceTexture object\n");
-        return false;
-    }
+    surfaceTexture_ = env_->NewGlobalRef(localObj);
 
     return true;
 }
@@ -134,24 +112,19 @@ bool AndroidSurface::CreateSurface()
         return false;
     }
 
-    surface_ = env_->NewObject(surfaceClass, constructor, surfaceTexture_);
-    if (surface_ == nullptr)
+    jobject localObj = env_->NewObject(surfaceClass, constructor, surfaceTexture_);
+    if (localObj == nullptr)
     {
         logger_->Log("Failed to create Surface object\n");
         return false;
     }
+    surface_ = env_->NewGlobalRef(localObj);
 
     return true;
 }
 //------------------------------------------------------------------------------
 bool AndroidSurface::CreateNativeWindow()
 {
-    if (surface_ == nullptr)
-    {
-        logger_->Log("Surface is not created\n");
-        return false;
-    }
-
     nativeWindow_ = ANativeWindow_fromSurface(env_, surface_);
     if (nativeWindow_ == nullptr)
     {

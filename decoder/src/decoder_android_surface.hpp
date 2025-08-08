@@ -20,7 +20,6 @@ private:
     jobject surface_ = nullptr;
     struct ANativeWindow* nativeWindow_ = nullptr;
 
-    bool CreateSurfaceTexture();
     bool CreateSurfaceTexture(int textureID);
     bool CreateSurface();
     bool CreateNativeWindow();
