@@ -61,13 +61,10 @@ bool DecoderAndroid::CreateTexture()
 {
     DestroyTexture();
 
-    texture_width = video_width;
-    texture_height = (int)(video_height * PIXEL_WIDTH);
-
     // create texture
     GLuint glTexture;
-    glGenTextures(1, &glTexture);
     GLenum target = CODEC_DIRECT_OUTPUT ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D;
+    glGenTextures(1, &glTexture);
     glBindTexture(target, glTexture);
 
     // set texture parameters
@@ -76,11 +73,13 @@ bool DecoderAndroid::CreateTexture()
     glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+#if !CODEC_DIRECT_OUTPUT
+    texture_width = video_width;
+    texture_height = (int)(video_height * PIXEL_WIDTH);
     glTexImage2D(target, 0,
-                 TEXTURE_FORMAT, texture_width, texture_height, 0,
-                 TEXTURE_FORMAT, GL_UNSIGNED_BYTE, nullptr);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glFlush();
+                TEXTURE_FORMAT, texture_width, texture_height, 0,
+                TEXTURE_FORMAT, GL_UNSIGNED_BYTE, nullptr);
+#endif
 
     textureID = (intptr_t)glTexture;
     return true;
@@ -88,6 +87,10 @@ bool DecoderAndroid::CreateTexture()
 //------------------------------------------------------------------------------
 bool DecoderAndroid::UpdateTexture(const void* data)
 {
+#if CODEC_DIRECT_OUTPUT
+        // No CPU upload in direct-output mode
+        return true;
+#endif
     if (textureID == 0)
     {
         Log("Texture not created yet\n");
@@ -98,9 +101,8 @@ bool DecoderAndroid::UpdateTexture(const void* data)
         Log("Data pointer is null\n");
         return false;
     }
-    GLenum target = CODEC_DIRECT_OUTPUT ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D;
-    glBindTexture(target, (GLuint)textureID);
-    glTexSubImage2D(target, 0, 0, 0,
+    glBindTexture(GL_TEXTURE_2D, (GLuint)textureID);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
                     texture_width, texture_height,
                     TEXTURE_FORMAT, GL_UNSIGNED_BYTE,
                     data); // Update texture with new data
@@ -236,6 +238,10 @@ AMediaCodec* DecoderAndroid::createMediaCodec(bool isHardware, const char* codec
             delete surface;
         surface = new AndroidSurface(logger_, app_);
         nativeWindow = surface->CreateFromTexture(textureID);
+        if (!nativeWindow)
+        {
+            Log("Failed creating native window for direct output\n");
+        }
     }
 #endif
     AMediaCodec* codec = nullptr;
@@ -316,8 +322,11 @@ bool DecoderAndroid::DecodeFrame()
                 {
                     Log("End of stream\n");
                     ssize_t emptyIndex = AMediaCodec_dequeueInputBuffer(mediaCodec, 1000);
-                    AMediaCodec_queueInputBuffer(mediaCodec, emptyIndex, 0, 0, 0,
-                                                 AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM );
+                    if (emptyIndex >= 0)
+                    {
+                        AMediaCodec_queueInputBuffer(mediaCodec, emptyIndex, 0, 0, 0,
+                                                     AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM );
+                    }
                 }
             }
         }
@@ -346,7 +355,8 @@ bool DecoderAndroid::RenderFrame()
     {
 #if CODEC_DIRECT_OUTPUT
         AMediaCodec_releaseOutputBuffer(mediaCodec, outputBufferIndex, true);
-        surface->Update();
+        if (surface) // safety check
+            surface->Update(); // must be called on GL thread owning the EGLContext
 #else
         size_t outputBufferSize;
         uint8_t* outputBuffer = AMediaCodec_getOutputBuffer(mediaCodec, outputBufferIndex, &outputBufferSize);
@@ -387,6 +397,11 @@ bool DecoderAndroid::RenderFrame()
     else if (outputBufferIndex == AMEDIACODEC_INFO_TRY_AGAIN_LATER)
     {
         Log("Try again later\n");
+        return true;
+    }
+    else if (outputBufferIndex == AMEDIACODEC_INFO_OUTPUT_BUFFERS_CHANGED)
+    {
+        Log("Output buffers changed (ignored)\n");
         return true;
     }
     else

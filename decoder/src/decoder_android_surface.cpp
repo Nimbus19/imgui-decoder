@@ -11,17 +11,34 @@ AndroidSurface::AndroidSurface(Logger* logger, android_app* g_app)
 {
     logger_ = logger;
     app_ = g_app;
-    app_->activity->vm->AttachCurrentThread(&env_, nullptr);
+    vm_ = app_->activity->vm; // store JavaVM
 }
 //------------------------------------------------------------------------------
 AndroidSurface::~AndroidSurface()
 {
     Destroy();
-    if (env_ != nullptr)
+    // Do not force Detach here; long-lived native threads can stay attached.
+}
+//------------------------------------------------------------------------------
+JNIEnv* AndroidSurface::GetEnv()
+{
+    if (!vm_) return nullptr;
+    JNIEnv* env = nullptr;
+    jint res = vm_->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    if (res == JNI_EDETACHED)
     {
-        app_->activity->vm->DetachCurrentThread();
-        env_ = nullptr;
+        if (vm_->AttachCurrentThread(&env, nullptr) != JNI_OK)
+        {
+            logger_->Log("AttachCurrentThread failed\n");
+            return nullptr;
+        }
     }
+    else if (res != JNI_OK)
+    {
+        logger_->Log("GetEnv failed\n");
+        return nullptr;
+    }
+    return env;
 }
 //------------------------------------------------------------------------------
 ANativeWindow* AndroidSurface::CreateFromTexture(int textureID)
@@ -49,83 +66,98 @@ ANativeWindow* AndroidSurface::CreateFromTexture(int textureID)
 //------------------------------------------------------------------------------
 void AndroidSurface::Destroy()
 {
+    JNIEnv* env = GetEnv();
     if (nativeWindow_ != nullptr)
     {
         ANativeWindow_release(nativeWindow_);
         nativeWindow_ = nullptr;
     }
-    if (surface_ != nullptr)
+    if (env && surface_ != nullptr)
     {
-        env_->DeleteGlobalRef(surface_);
+        env->DeleteGlobalRef(surface_);
         surface_ = nullptr;
     }
-    if (surfaceTexture_ != nullptr)
+    if (env && surfaceTexture_ != nullptr)
     {
-        jclass surfaceTextureClass = env_->GetObjectClass(surfaceTexture_);
-        jmethodID releaseMethod = env_->GetMethodID(surfaceTextureClass, "release", "()V");
-        env_->CallVoidMethod(surfaceTexture_, releaseMethod);
-        env_->DeleteGlobalRef(surfaceTexture_);
+        jclass surfaceTextureClass = env->GetObjectClass(surfaceTexture_);
+        jmethodID releaseMethod = env->GetMethodID(surfaceTextureClass, "release", "()V");
+        if (releaseMethod)
+            env->CallVoidMethod(surfaceTexture_, releaseMethod);
+        if (env->ExceptionCheck())
+        {
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
+        env->DeleteGlobalRef(surfaceTexture_);
         surfaceTexture_ = nullptr;
     }
 }
 //------------------------------------------------------------------------------
 bool AndroidSurface::CreateSurfaceTexture(int textureID)
 {
-    jclass surfaceTextureClass = env_->FindClass("android/graphics/SurfaceTexture");
+    JNIEnv* env = GetEnv();
+    if (!env) return false;
+
+    jclass surfaceTextureClass = env->FindClass("android/graphics/SurfaceTexture");
     if (surfaceTextureClass == nullptr)
     {
         logger_->Log("Failed to find SurfaceTexture class\n");
         return false;
     }
 
-    jmethodID constructor = env_->GetMethodID(surfaceTextureClass, "<init>", "(I)V");
+    jmethodID constructor = env->GetMethodID(surfaceTextureClass, "<init>", "(I)V");
     if (constructor == nullptr)
     {
         logger_->Log("Failed to find SurfaceTexture constructor\n");
         return false;
     }
 
-    jobject localObj = env_->NewObject(surfaceTextureClass, constructor, textureID);
+    jobject localObj = env->NewObject(surfaceTextureClass, constructor, textureID);
     if (localObj == nullptr)
     {
         logger_->Log("Failed to create SurfaceTexture object\n");
         return false;
     }
-    surfaceTexture_ = env_->NewGlobalRef(localObj);
+    surfaceTexture_ = env->NewGlobalRef(localObj);
 
     return true;
 }
 //------------------------------------------------------------------------------
 bool AndroidSurface::CreateSurface()
 {
-    jclass surfaceClass = env_->FindClass("android/view/Surface");
+    JNIEnv* env = GetEnv();
+    if (!env) return false;
+
+    jclass surfaceClass = env->FindClass("android/view/Surface");
     if (surfaceClass == nullptr)
     {
         logger_->Log("Failed to find Surface class\n");
         return false;
     }
 
-    jmethodID constructor = env_->GetMethodID(surfaceClass, "<init>", "(Landroid/graphics/SurfaceTexture;)V");
+    jmethodID constructor = env->GetMethodID(surfaceClass, "<init>", "(Landroid/graphics/SurfaceTexture;)V");
     if (constructor == nullptr)
     {
         logger_->Log("Failed to find Surface constructor\n");
         return false;
     }
 
-    jobject localObj = env_->NewObject(surfaceClass, constructor, surfaceTexture_);
+    jobject localObj = env->NewObject(surfaceClass, constructor, surfaceTexture_);
     if (localObj == nullptr)
     {
         logger_->Log("Failed to create Surface object\n");
         return false;
     }
-    surface_ = env_->NewGlobalRef(localObj);
+    surface_ = env->NewGlobalRef(localObj);
 
     return true;
 }
 //------------------------------------------------------------------------------
 bool AndroidSurface::CreateNativeWindow()
 {
-    nativeWindow_ = ANativeWindow_fromSurface(env_, surface_);
+    JNIEnv* env = GetEnv();
+    if (!env) return false;
+    nativeWindow_ = ANativeWindow_fromSurface(env, surface_);
     if (nativeWindow_ == nullptr)
     {
         logger_->Log("Failed to create ANativeWindow from Surface\n");
@@ -137,7 +169,16 @@ bool AndroidSurface::CreateNativeWindow()
 //------------------------------------------------------------------------------
 void AndroidSurface::Update()
 {
-    jclass surfaceTextureClass = env_->GetObjectClass(surfaceTexture_);
-    jmethodID updateTexImage = env_->GetMethodID(surfaceTextureClass, "updateTexImage", "()V");
-    env_->CallVoidMethod(surfaceTexture_, updateTexImage);
+    // Must be called on GL thread that owns the external OES texture's EGLContext
+    JNIEnv* env = GetEnv();
+    if (!env || !surfaceTexture_) return;
+    jclass surfaceTextureClass = env->GetObjectClass(surfaceTexture_);
+    jmethodID updateTexImage = env->GetMethodID(surfaceTextureClass, "updateTexImage", "()V");
+    if (!updateTexImage) return;
+    env->CallVoidMethod(surfaceTexture_, updateTexImage);
+    if (env->ExceptionCheck())
+    {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
 }
