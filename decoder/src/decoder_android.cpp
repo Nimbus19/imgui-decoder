@@ -41,11 +41,6 @@ DecoderAndroid::~DecoderAndroid()
         AMediaExtractor_delete(mediaExtractor);
         mediaExtractor = nullptr;
     }
-    if (surface != nullptr)
-    {
-        delete surface;
-        surface = nullptr;
-    }
     DestroyTexture();
 }
 //------------------------------------------------------------------------------
@@ -84,7 +79,7 @@ bool DecoderAndroid::CreateTexture()
     glTexImage2D(target, 0,
                  TEXTURE_FORMAT, texture_width, texture_height, 0,
                  TEXTURE_FORMAT, GL_UNSIGNED_BYTE, nullptr);
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     glFlush();
 
     textureID = (intptr_t)glTexture;
@@ -109,7 +104,7 @@ bool DecoderAndroid::UpdateTexture(const void* data)
                     texture_width, texture_height,
                     TEXTURE_FORMAT, GL_UNSIGNED_BYTE,
                     data); // Update texture with new data
-    glBindTexture(target, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     glFlush();
     Log("Texture updated successfully\n");
     return true;
@@ -117,6 +112,11 @@ bool DecoderAndroid::UpdateTexture(const void* data)
 //------------------------------------------------------------------------------
 void DecoderAndroid::DestroyTexture()
 {
+    if (surface != nullptr)
+    {
+        delete surface;
+        surface = nullptr;
+    }
     if (textureID != 0)
     {
         glDeleteTextures(1, (GLuint*)&textureID);
@@ -345,8 +345,6 @@ bool DecoderAndroid::RenderFrame()
     if (outputBufferIndex >= 0)
     {
 #if CODEC_DIRECT_OUTPUT
-        size_t outputBufferSize;
-        AMediaCodec_getOutputBuffer(mediaCodec, outputBufferIndex, &outputBufferSize);
         AMediaCodec_releaseOutputBuffer(mediaCodec, outputBufferIndex, true);
         surface->Update();
 #else
