@@ -11,15 +11,17 @@
 #include <media/NdkMediaCodec.h>
 #include <media/NdkMediaExtractor.h>
 #include <media/NdkMediaFormat.h>
+#include <sys/stat.h>
 
 #include "logger.hpp"
 #include "decoder_android_OMX.hpp"
 #include "decoder_android_surface.hpp"
 
-#define CODEC_DIRECT_OUTPUT 1 // Enable decoder direct output to texture
-#define CODEC_OUTPUT_FORMAT OMX_COLOR_FormatYUV420SemiPlanar // NV12 or NV21
+#define CODEC_DIRECT_OUTPUT 1 // Enable decoder direct output to surface (OES texture)
+#define DIRECT_OUTPUT_FORMAT OMX_COLOR_FormatAndroidOpaque // Direct output format is restricted
+#define BUFFER_OUTPUT_FORMAT OMX_COLOR_FormatYUV420SemiPlanar // Use NV12 if not direct-output mode
 #define PIXEL_WIDTH 1.5 // NV12 format has 1.5 bytes per pixel
-#define TEXTURE_FORMAT GL_LUMINANCE
+#define TEXTURE_FORMAT GL_LUMINANCE // Texture format for NV12 is GL_LUMINANCE
 
 //------------------------------------------------------------------------------
 DecoderAndroid::DecoderAndroid(Logger* ui_logger, android_app* g_app)
@@ -46,7 +48,7 @@ DecoderAndroid::~DecoderAndroid()
 //------------------------------------------------------------------------------
 bool DecoderAndroid::ReadMedia(const char* filePath)
 {
-    FILE* file = fopen(filePath, "r");
+    FILE* file = fopen(filePath, "rb");
     if (file == nullptr)
     {
         Log("Failed to open file: %s\n", filePath);
@@ -90,7 +92,7 @@ bool DecoderAndroid::UpdateTexture(const void* data)
 #if CODEC_DIRECT_OUTPUT
         // No CPU upload in direct-output mode
         return true;
-#endif
+#else
     if (textureID == 0)
     {
         Log("Texture not created yet\n");
@@ -110,6 +112,7 @@ bool DecoderAndroid::UpdateTexture(const void* data)
     glFlush();
     Log("Texture updated successfully\n");
     return true;
+#endif
 }
 //------------------------------------------------------------------------------
 void DecoderAndroid::DestroyTexture()
@@ -143,7 +146,7 @@ bool DecoderAndroid::CreateCodec()
     {
         int videoMediaFormatID;
         AMediaFormat_getInt32(format, "color-format", &videoMediaFormatID);
-        Log("Video Media Format ID: %d\n", videoMediaFormatID);
+        Log("Video Media Format ID: 0x%x\n", videoMediaFormatID);
         AMediaFormat_delete(format);
     }
 
@@ -159,6 +162,19 @@ void DecoderAndroid::DestroyCodec()
         AMediaCodec_delete(mediaCodec);
         mediaCodec = nullptr;
     }
+}
+//------------------------------------------------------------------------------
+static off64_t ftell64(int fd)
+{
+#if defined(__LP64__)
+    struct stat st{};
+    if (fstat(fd, &st) == -1) return -1;        // 64 位 ABI：fstat 即 64 位
+    return static_cast<off64_t>(st.st_size);
+#else
+    struct stat64 st{};
+    if (fstat64(fd, &st) == -1) return -1;      // 32 位 ABI：使用 fstat64
+    return static_cast<off64_t>(st.st_size);
+#endif
 }
 //------------------------------------------------------------------------------
 bool DecoderAndroid::GetMediaFormat(FILE* file)
@@ -180,8 +196,7 @@ bool DecoderAndroid::GetMediaFormat(FILE* file)
     }
 
     int fd = fileno(file);
-    fseek(file, 0, SEEK_END);
-    off64_t size = ftell(file);
+    off64_t size = ftell64(fd);
 
     mediaExtractor = AMediaExtractor_new();
     media_status_t hr = AMediaExtractor_setDataSourceFd(mediaExtractor, fd, 0, size);
@@ -219,6 +234,11 @@ bool DecoderAndroid::GetMediaFormat(FILE* file)
             AMediaFormat_getInt32(mediaFormat, "width", &video_width);
             AMediaFormat_getInt32(mediaFormat, "height", &video_height);
             Log("Track %d: width=%d, height=%d\n", i, video_width, video_height);
+#if CODEC_DIRECT_OUTPUT
+            AMediaFormat_setInt32(mediaFormat, "color-format", DIRECT_OUTPUT_FORMAT);
+#else
+            AMediaFormat_setInt32(mediaFormat, "color-format", BUFFER_OUTPUT_FORMAT);
+#endif
         }
         else
         {
@@ -253,7 +273,6 @@ AMediaCodec* DecoderAndroid::createMediaCodec(bool isHardware, const char* codec
     if (codec == nullptr)
         return nullptr;
 
-    AMediaFormat_setInt32(mediaFormat, "color-format", CODEC_OUTPUT_FORMAT);
     media_status_t hr = AMediaCodec_configure(codec, mediaFormat, nativeWindow, nullptr, 0);
     if (hr != AMEDIA_OK)
     {
