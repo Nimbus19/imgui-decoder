@@ -358,9 +358,10 @@ bool DecoderAndroid::DecodeFrame()
     else
     {
         Log("No input buffer available\n");
+        return false;
     }
 
-    return true;
+    return false;
 }
 //------------------------------------------------------------------------------
 bool DecoderAndroid::RenderFrame()
@@ -416,16 +417,17 @@ bool DecoderAndroid::RenderFrame()
     else if (outputBufferIndex == AMEDIACODEC_INFO_TRY_AGAIN_LATER)
     {
         Log("Try again later\n");
-        return true;
+        return false;
     }
     else if (outputBufferIndex == AMEDIACODEC_INFO_OUTPUT_BUFFERS_CHANGED)
     {
         Log("Output buffers changed (ignored)\n");
-        return true;
+        return false;
     }
     else
     {
         Log("Failed to dequeue output buffer: %zd\n", outputBufferIndex);
+        return false;
     }
     return false;
 }

@@ -251,13 +251,13 @@ bool DecoderWindows::DecodeFrame()
     if (!reader_ || !codec_)
         return false;
 
-    HRESULT hr = S_OK;
+    HRESULT hr = E_FAIL;
     DWORD flags;
     LONGLONG timestamp;
 
     if (!previous_not_accepted_)
     {
-        reader_->ReadSample(
+        hr = reader_->ReadSample(
             (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
             0,
             &steam_id_, &flags, &timestamp, &input_sample_);
@@ -299,7 +299,7 @@ bool DecoderWindows::RenderFrame()
     if (!codec_)
         return false;
 
-    HRESULT hr = S_OK;
+    HRESULT hr = E_FAIL;
     DWORD output_status = 0;
     MFT_OUTPUT_DATA_BUFFER output_buffer = { 0, output_sample_, 0, NULL };
 
