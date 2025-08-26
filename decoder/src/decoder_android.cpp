@@ -310,7 +310,9 @@ bool DecoderAndroid::DecodeFrame()
             ssize_t size = AMediaExtractor_readSampleData(mediaExtractor, inputBuffer, inputBufferSize);
             if (size <= 0)
             {
-                Log("Failed to read sample data\n");
+                Log("End of stream\n");
+                AMediaCodec_queueInputBuffer(mediaCodec, inputBufferIndex, 0, 0, 0,
+                                             AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM );
                 return false;
             }
             else
@@ -336,17 +338,8 @@ bool DecoderAndroid::DecodeFrame()
                 Log("Size : %zu\n", size);
 
                 // Advance the extractor to the next sample
-                bool hasNext = AMediaExtractor_advance(mediaExtractor);
-                if (!hasNext)
-                {
-                    Log("End of stream\n");
-                    ssize_t emptyIndex = AMediaCodec_dequeueInputBuffer(mediaCodec, 1000);
-                    if (emptyIndex >= 0)
-                    {
-                        AMediaCodec_queueInputBuffer(mediaCodec, emptyIndex, 0, 0, 0,
-                                                     AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM );
-                    }
-                }
+                AMediaExtractor_advance(mediaExtractor);
+                return true;
             }
         }
         else
