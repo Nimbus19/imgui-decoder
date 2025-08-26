@@ -11,18 +11,21 @@
 #   include <d3d11.h>
 #   include "decoder_windows.hpp"
 #   define USE_SQUARE_LAYOUT true
-#   define HEIGH_RATIO 1.0f
+#   define SECTION_RATIO 1.0f
+#   define BUTTON_RATIO 1.0f
 #elif defined(__ANDROID__)
 #   include <android/log.h>
 #   include "imgui_impl_android.h"
 #   include "imgui_impl_opengl3.h"
 #   include "decoder_android.hpp"
 #   define USE_SQUARE_LAYOUT false
-#   define HEIGH_RATIO 1.5f
+#   define SECTION_RATIO 2.25f
+#   define BUTTON_RATIO 1.5f
 #elif defined(__APPLE__)
 #   include "decoder_apple.hpp"
 #   define USE_SQUARE_LAYOUT true
-#   define HEIGH_RATIO 1.0f
+#   define SECTION_RATIO 1.0f
+#   define BUTTON_RATIO 1.0f
 #endif
 
 
@@ -97,7 +100,7 @@ void DecoderUI::DrawPage0()
     ImGui::Spacing();
 
     // Left Section
-    ImGui::BeginChild("MediaInfo", ImVec2(455, 400 * HEIGH_RATIO * HEIGH_RATIO), true);
+    ImGui::BeginChild("MediaInfo", ImVec2(455, 400 * SECTION_RATIO), true);
     {
         // Media path
         ImGui::PushItemWidth(-1);
@@ -109,14 +112,14 @@ void DecoderUI::DrawPage0()
             "##MediaInfo",
             media_text_,
             sizeof(media_text_),
-            ImVec2(-1, 300 * HEIGH_RATIO * HEIGH_RATIO),
+            ImVec2(-1, 300 * SECTION_RATIO),
             ImGuiInputTextFlags_ReadOnly
         );        
         ImGui::Spacing();
 
         // Read button
         ImGui::PushStyleColor(ImGuiCol_Button, kGreen);
-        if (ImGui::Button("1. Read", ImVec2(160, 40 * HEIGH_RATIO)))
+        if (ImGui::Button("1. Read", ImVec2(160, 40 * BUTTON_RATIO)))
         {
             memset(media_text_, 0, sizeof(media_text_));
             logger_->AddOutput(media_text_, sizeof(media_text_));
@@ -130,20 +133,20 @@ void DecoderUI::DrawPage0()
     ImGui::SameLine();
 
     // Right Section
-    ImGui::BeginChild("Decoder", ImVec2(455, 410 * HEIGH_RATIO * HEIGH_RATIO), false);
+    ImGui::BeginChild("Decoder", ImVec2(455, 410 * SECTION_RATIO), false);
     {
         // Create Section
-        ImGui::BeginChild("Create", ImVec2(-1, 130 * HEIGH_RATIO * HEIGH_RATIO), true);
+        ImGui::BeginChild("Create", ImVec2(-1, 130 * SECTION_RATIO), true);
         {
             ImGui::InputTextMultiline(
                 "##Create",
                 create_text_,
                 sizeof(create_text_),
-                ImVec2(-1, 70 * HEIGH_RATIO * HEIGH_RATIO),
+                ImVec2(-1, 70 * SECTION_RATIO),
                 ImGuiInputTextFlags_ReadOnly
             );
             ImGui::PushStyleColor(ImGuiCol_Button, kBlue);
-            if (ImGui::Button("2. Create", ImVec2(160, 40 * HEIGH_RATIO)))
+            if (ImGui::Button("2. Create", ImVec2(160, 40 * BUTTON_RATIO)))
             {
                 memset(create_text_, 0, sizeof(create_text_));
                 logger_->AddOutput(create_text_, sizeof(create_text_));
@@ -160,17 +163,17 @@ void DecoderUI::DrawPage0()
         ImGui::EndChild();
 
         // Decode Section
-        ImGui::BeginChild("Decode", ImVec2(-1, 130 * HEIGH_RATIO * HEIGH_RATIO), true);
+        ImGui::BeginChild("Decode", ImVec2(-1, 130 * SECTION_RATIO), true);
         {
             ImGui::InputTextMultiline(
                 "##Decode",
                 decode_text_,
                 sizeof(decode_text_),
-                ImVec2(-1, 70 * HEIGH_RATIO * HEIGH_RATIO),
+                ImVec2(-1, 70 * SECTION_RATIO),
                 ImGuiInputTextFlags_ReadOnly
             );
             ImGui::PushStyleColor(ImGuiCol_Button, kViolet);
-            if (ImGui::Button("3. Decode", ImVec2(160, 40 * HEIGH_RATIO)))
+            if (ImGui::Button("3. Decode", ImVec2(160, 40 * BUTTON_RATIO)))
             {
                 memset(decode_text_, 0, sizeof(decode_text_));
                 logger_->AddOutput(decode_text_, sizeof(decode_text_));
@@ -179,7 +182,7 @@ void DecoderUI::DrawPage0()
                 logger_->RemoveOutput(decode_text_);
             }
             ImGui::SameLine();
-            if (ImGui::Button("Decode x 10", ImVec2(160, 40 * HEIGH_RATIO)))
+            if (ImGui::Button("Decode x 10", ImVec2(160, 40 * BUTTON_RATIO)))
             {
                 memset(decode_text_, 0, sizeof(decode_text_));
                 logger_->AddOutput(decode_text_, sizeof(decode_text_));
@@ -198,17 +201,17 @@ void DecoderUI::DrawPage0()
         ImGui::EndChild();
 
         // Render Section
-        ImGui::BeginChild("Render", ImVec2(-1, 130 * HEIGH_RATIO * HEIGH_RATIO), true);
+        ImGui::BeginChild("Render", ImVec2(-1, 130 * SECTION_RATIO), true);
         {
             ImGui::InputTextMultiline(
                 "##Render",
                 render_text_,
                 sizeof(render_text_),
-                ImVec2(-1, 70 * HEIGH_RATIO * HEIGH_RATIO),
+                ImVec2(-1, 70 * SECTION_RATIO),
                 ImGuiInputTextFlags_ReadOnly
             );
             ImGui::PushStyleColor(ImGuiCol_Button, kRed);
-            if (ImGui::Button("4. Render", ImVec2(160, 40 * HEIGH_RATIO)))
+            if (ImGui::Button("4. Render", ImVec2(160, 40 * BUTTON_RATIO)))
             {
                 memset(render_text_, 0, sizeof(render_text_));
                 logger_->AddOutput(render_text_, sizeof(render_text_));
@@ -216,6 +219,17 @@ void DecoderUI::DrawPage0()
                     render_count_++;
                 logger_->RemoveOutput(render_text_);
             }
+            ImGui::SameLine();
+            if (ImGui::Button("Render x 10", ImVec2(160, 40 * BUTTON_RATIO)))
+            {
+                memset(render_text_, 0, sizeof(render_text_));
+                logger_->AddOutput(render_text_, sizeof(render_text_));
+                for (int i = 0; i < 10; ++i)
+                {
+                    if (!decoder_->RenderFrame())
+                        break;
+                    render_count_++;
+                }
                 logger_->RemoveOutput(render_text_);
             }
             ImGui::PopStyleColor();
@@ -235,7 +249,7 @@ void DecoderUI::DrawPage0()
     // Show texture
     ImGui::BeginChild("Texture", ImVec2(917, -1), true);
     {
-        ShowTexture(5 / HEIGH_RATIO / HEIGH_RATIO);
+        ShowTexture(5 / BUTTON_RATIO / BUTTON_RATIO);
     }
     ImGui::EndChild();
 
@@ -245,7 +259,7 @@ void DecoderUI::DrawPage1()
 {
     ImGui::TextColored(ImVec4(1,1,1,1), "Texture");
     // Show texture
-    ShowTexture(1.6 / HEIGH_RATIO / HEIGH_RATIO);
+    ShowTexture(1.6 / BUTTON_RATIO / BUTTON_RATIO);
 }
 //------------------------------------------------------------------------------
 void DecoderUI::ShowTexture(float scale)
