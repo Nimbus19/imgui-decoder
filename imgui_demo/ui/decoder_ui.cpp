@@ -147,8 +147,13 @@ void DecoderUI::DrawPage0()
             {
                 memset(create_text_, 0, sizeof(create_text_));
                 logger_->AddOutput(create_text_, sizeof(create_text_));
-                decoder_->CreateCodec();
+                if (decoder_->CreateCodec())
+                {
+                    decode_count_ = 0;
+                    render_count_ = 0;
+                }
                 logger_->RemoveOutput(create_text_);
+
             }
             ImGui::PopStyleColor();
         }
@@ -169,7 +174,8 @@ void DecoderUI::DrawPage0()
             {
                 memset(decode_text_, 0, sizeof(decode_text_));
                 logger_->AddOutput(decode_text_, sizeof(decode_text_));
-                decoder_->DecodeFrame();
+                if (decoder_->DecodeFrame())
+                    decode_count_++;
                 logger_->RemoveOutput(decode_text_);
             }
             ImGui::SameLine();
@@ -181,10 +187,13 @@ void DecoderUI::DrawPage0()
                 {
                     if (!decoder_->DecodeFrame())
                         break;
+                    decode_count_++;
                 }
                 logger_->RemoveOutput(decode_text_);
             }
             ImGui::PopStyleColor();
+            ImGui::SameLine();
+            ImGui::Text("%d", decode_count_);
         }
         ImGui::EndChild();
 
@@ -203,10 +212,15 @@ void DecoderUI::DrawPage0()
             {
                 memset(render_text_, 0, sizeof(render_text_));
                 logger_->AddOutput(render_text_, sizeof(render_text_));
-                decoder_->RenderFrame();
+                if (decoder_->RenderFrame())
+                    render_count_++;
+                logger_->RemoveOutput(render_text_);
+            }
                 logger_->RemoveOutput(render_text_);
             }
             ImGui::PopStyleColor();
+            ImGui::SameLine();
+            ImGui::Text("%d", render_count_);
         }
         ImGui::EndChild();
     }

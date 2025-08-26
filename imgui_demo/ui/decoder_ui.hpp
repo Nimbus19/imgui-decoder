@@ -49,4 +49,7 @@ protected:
     char create_text_[2048] = "Create Info\n";
     char decode_text_[2048] = "Decode Info\n";
     char render_text_[2048] = "Render Info\n";
+
+    int decode_count_ = 0;
+    int render_count_ = 0;
 };
