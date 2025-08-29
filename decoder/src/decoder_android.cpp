@@ -26,11 +26,14 @@ DecoderAndroid::DecoderAndroid(Logger* ui_logger, android_app* g_app)
     : Decoder(ui_logger)
 {
     app_ = g_app;
+    texture = new AndroidTexture(logger_, app_);
+    surface = new AndroidSurface(logger_, app_);
 }
 //------------------------------------------------------------------------------
 DecoderAndroid::~DecoderAndroid()
 {
     DestroyCodec();
+    DestroyTexture();
     if (mediaFormat != nullptr)
     {
         AMediaFormat_delete(mediaFormat);
@@ -41,7 +44,16 @@ DecoderAndroid::~DecoderAndroid()
         AMediaExtractor_delete(mediaExtractor);
         mediaExtractor = nullptr;
     }
-    DestroyTexture();
+    if (surface != nullptr)
+    {
+        delete surface;
+        surface = nullptr;
+    }
+    if (texture != nullptr)
+    {
+        delete texture;
+        texture = nullptr;
+    }
 }
 //------------------------------------------------------------------------------
 bool DecoderAndroid::ReadMedia(const char* filePath)
@@ -59,21 +71,9 @@ bool DecoderAndroid::ReadMedia(const char* filePath)
 //------------------------------------------------------------------------------
 bool DecoderAndroid::CreateTexture()
 {
-    DestroyTexture();
-    texture = new AndroidTexture(logger_, app_);
-    surface = new AndroidSurface(logger_, app_);
-
-#if CODEC_DIRECT_OUTPUT
-    if (!texture->CreateOESTexture())
-    {
-        Log("Failed to create OES texture\n");
-        return false;
-    }
-    textureID = (intptr_t)texture->oesTex;
-    return true;
-#else
     texture_width = video_width;
     texture_height = (int)(video_height * PIXEL_WIDTH);
+
     if (!texture->CreateGLTexture(texture_width, texture_height))
     {
         Log("Failed to create GL texture\n");
@@ -81,31 +81,23 @@ bool DecoderAndroid::CreateTexture()
     }
     textureID = (intptr_t)texture->glTex;
     return true;
-#endif
 }
 //------------------------------------------------------------------------------
 bool DecoderAndroid::UpdateTexture(const void* data)
 {
 #if CODEC_DIRECT_OUTPUT
-        // No CPU upload in direct-output mode
-        return true;
+    return texture->RenderOESToGL();
 #else
-    return texture->UpdateGLTexture(texture_width, texture_height, data);
+    return texture->UpdateGLTexture(data);
 #endif
 }
 //------------------------------------------------------------------------------
 void DecoderAndroid::DestroyTexture()
 {
-    if (surface != nullptr)
-    {
-        delete surface;
-        surface = nullptr;
-    }
-    if (texture != nullptr)
-    {
-        delete texture;
-        texture = nullptr;
-    }
+    surface->Destroy();
+    texture->DestroyGLTexture();
+    //texture->DestroyOESTexture(); // No need to destroy OES texture here
+    textureID = 0;
 }
 //------------------------------------------------------------------------------
 bool DecoderAndroid::CreateCodec()
@@ -240,9 +232,9 @@ AMediaCodec* DecoderAndroid::createMediaCodec(bool isHardware, const char* codec
         return nullptr;
 
 #if CODEC_DIRECT_OUTPUT
-    if (CreateTexture())
+    if (texture->CreateOESTexture())
     {
-        nativeWindow = surface->CreateFromTexture(textureID);
+        nativeWindow = surface->CreateFromTexture((int)texture->oesTex);
         if (!nativeWindow)
         {
             Log("Failed creating native window for direct output\n");
@@ -345,6 +337,7 @@ bool DecoderAndroid::RenderFrame()
         AMediaCodec_releaseOutputBuffer(mediaCodec, outputBufferIndex, true);
         if (surface) // safety check
             surface->Update(); // must be called on GL thread owning the EGLContext
+        UpdateTexture(nullptr);
 #else
         size_t outputBufferSize;
         uint8_t* outputBuffer = AMediaCodec_getOutputBuffer(mediaCodec, outputBufferIndex, &outputBufferSize);
@@ -368,12 +361,17 @@ bool DecoderAndroid::RenderFrame()
             AMediaFormat_getInt32(newFormat, "height", &video_height);
             Log("New output format: width=%d, height=%d\n", video_width, video_height);
             AMediaFormat_delete(newFormat);
-#if !CODEC_DIRECT_OUTPUT
+
             if (textureID == 0)
+            {
                 CreateTexture(); // Create texture if not already created
-            else
-                UpdateTexture(nullptr); // Update texture size if already created
-#endif
+            }
+            else if (texture->width != video_width || texture->height != video_height)
+            {
+                DestroyTexture();
+                CreateTexture(); // Recreate texture if size changed
+            }
+
             return false;
         }
         else
