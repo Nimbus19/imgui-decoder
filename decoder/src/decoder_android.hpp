@@ -24,6 +24,7 @@ private:
     struct AMediaExtractor* mediaExtractor = nullptr;
     struct AMediaCodec* mediaCodec = nullptr;
     class  AndroidSurface* surface = nullptr;
+    class  AndroidTexture* texture = nullptr;
 
     bool GetMediaFormat(FILE* file);
     struct AMediaCodec* createMediaCodec(bool isHardware, const char* codecString, struct AMediaFormat* format);
